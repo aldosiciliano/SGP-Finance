@@ -13,3 +13,15 @@ build/
 
 # Logs
 *.log
+
+# Vite cache
+frontend/.vite/
+.vite/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
