@@ -49,7 +49,7 @@ const Register = () => {
       title="Crear cuenta"
       subtitle="Configurá tu acceso y empezá a ordenar gastos, presupuesto e inversiones desde una misma vista."
     >
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit} autoComplete="on">
         <div className="rounded-3xl bg-[rgba(22,58,112,0.06)] px-4 py-3 text-center text-sm text-[var(--muted)] sm:text-left">
           ¿Ya tenés cuenta?{' '}
           <Link to="/login" className="font-semibold text-[var(--primary)]">
@@ -77,6 +77,7 @@ const Register = () => {
             placeholder="Nombre (opcional)"
             value={formData.nombre}
             onChange={handleChange}
+            autoComplete="name"
           />
 
           <AuthInput
@@ -88,6 +89,8 @@ const Register = () => {
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
+            autoComplete="email"
+            inputMode="email"
           />
 
           <AuthInput
@@ -100,6 +103,7 @@ const Register = () => {
             placeholder="Contraseña (mínimo 6 caracteres)"
             value={formData.password}
             onChange={handleChange}
+            autoComplete="new-password"
             trailing={
               <button
                 type="button"
@@ -121,6 +125,7 @@ const Register = () => {
             placeholder="Confirmar contraseña"
             value={formData.confirmPassword}
             onChange={handleChange}
+            autoComplete="new-password"
             trailing={
               <button
                 type="button"

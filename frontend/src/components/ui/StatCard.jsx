@@ -18,26 +18,26 @@ const StatCard = ({
 
   return (
     <article className={dark ? 'metric-card-dark' : 'metric-card'}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-3">
-          <p className={`text-sm ${dark ? 'text-[#c3d4ea]' : 'text-[var(--muted)]'}`}>{title}</p>
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 space-y-2">
+          <p className={`text-xs font-semibold uppercase tracking-[0.18em] sm:text-sm sm:normal-case sm:tracking-normal ${dark ? 'text-[#c3d4ea]' : 'text-[var(--muted)]'}`}>{title}</p>
           <div>
-            <p className={`text-3xl font-bold ${dark ? 'text-white' : 'text-[var(--text)]'}`}>{value}</p>
+            <p className={`text-2xl font-bold sm:text-3xl ${dark ? 'text-white' : 'text-[var(--text)]'}`}>{value}</p>
             {detail ? (
-              <p className={`mt-1 text-sm ${dark ? 'text-[#c3d4ea]' : 'text-[var(--muted)]'}`}>{detail}</p>
+              <p className={`mt-1 text-xs sm:text-sm ${dark ? 'text-[#c3d4ea]' : 'text-[var(--muted)]'}`}>{detail}</p>
             ) : null}
           </div>
         </div>
 
         {Icon ? (
-          <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${dark ? 'bg-white/10 text-white' : tones[tone]}`}>
-            <Icon className="h-6 w-6" />
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl sm:h-12 sm:w-12 ${dark ? 'bg-white/10 text-white' : tones[tone]}`}>
+            <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
         ) : null}
       </div>
 
       {trend ? (
-        <div className={`mt-5 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${dark ? 'bg-white/10 text-[#eef5ff]' : tones[tone]}`}>
+        <div className={`mt-4 inline-flex max-w-full rounded-full px-3 py-1 text-[11px] font-semibold sm:mt-5 sm:text-xs ${dark ? 'bg-white/10 text-[#eef5ff]' : tones[tone]}`}>
           {trend}
         </div>
       ) : null}
