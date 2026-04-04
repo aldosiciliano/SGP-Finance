@@ -1,87 +1,39 @@
 import React from 'react';
-import { ArrowUpRight, Landmark, Plus, ShieldCheck } from 'lucide-react';
+import { Lock, TrendingUp } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
-import StatCard from '../components/ui/StatCard';
-import { investmentPortfolio, monthlyExpenseSeries } from '../data/mockFinanceData';
 
 const Inversiones = () => {
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Cartera"
-        title="Una vista más clara de cómo está distribuido tu capital"
-        description="Reorganicé el módulo para que la lectura de asignación, retorno y riesgo sea directa incluso antes de conectar datos reales."
-        actions={
-          <>
-            <button className="secondary-button">
-              <ArrowUpRight className="h-4 w-4" />
-              Ver estrategia
-            </button>
-            <button className="primary-button">
-              <Plus className="h-4 w-4" />
-              Nueva inversión
-            </button>
-          </>
-        }
+        title="Seccion cerrada temporalmente"
+        description="El modulo de reportes todavia no esta habilitado."
       />
 
-      <div className="data-grid">
-        <StatCard title="Capital total" value="$1.225.000" detail="Actualizado al cierre de abril" trend="+6,4% mensual" icon={Landmark} />
-        <StatCard title="Instrumentos activos" value="4" detail="Balanceados entre renta fija y cobertura" trend="Diversificación estable" tone="success" />
-        <StatCard title="Exposición de riesgo alto" value="22%" detail="Concentrada en Cedears Tech" trend="Dentro del rango objetivo" tone="warning" />
-        <StatCard title="Protección cambiaria" value="18%" detail="Posición en dólar MEP" trend="Cobertura activa" icon={ShieldCheck} dark />
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <SectionPanel title="Asignación actual" description="Distribución simple para evaluar peso, retorno y riesgo de cada instrumento.">
-          <div className="space-y-3">
-            {investmentPortfolio.map((asset) => (
-              <div key={asset.asset} className="rounded-3xl bg-[rgba(22,58,112,0.04)] p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="font-semibold text-[var(--text)]">{asset.asset}</p>
-                    <p className="text-sm text-[var(--muted)]">Asignación {asset.allocation}</p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="pill">{asset.risk}</span>
-                    <span className="rounded-full bg-[rgba(29,138,103,0.12)] px-3 py-1 text-xs font-semibold text-[var(--success)]">
-                      {asset.return}
-                    </span>
-                  </div>
-                </div>
-                <p className="mt-4 text-2xl font-bold text-[var(--text)]">{asset.amount}</p>
-              </div>
-            ))}
-          </div>
-        </SectionPanel>
-
-        <SectionPanel title="Lectura estratégica" description="Estado resumido para decisiones de rebalanceo.">
-          <div className="space-y-4">
-            <div className="metric-card-dark">
-              <p className="eyebrow !text-[#8fd0bc]">Recomendación</p>
-              <p className="mt-3 text-2xl font-bold text-white">Mantener perfil moderado</p>
-              <p className="mt-2 text-sm text-[#c3d4ea]">
-                La cartera muestra cobertura adecuada en moneda dura y margen para sumar renta fija ajustada por inflación.
-              </p>
+      <SectionPanel className="overflow-hidden">
+        <div className="relative rounded-[28px] border border-[rgba(16,37,66,0.08)] bg-[linear-gradient(135deg,rgba(22,58,112,0.06),rgba(29,138,103,0.08))] p-8 sm:p-10">
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[rgba(29,138,103,0.12)] blur-2xl" />
+          <div className="relative mx-auto flex max-w-2xl flex-col items-center text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[var(--surface)] text-[var(--accent)] shadow-[0_16px_40px_rgba(22,58,112,0.08)]">
+              <Lock className="h-8 w-8" />
             </div>
-            <div className="section-card p-5">
-              <p className="text-sm text-[var(--muted)]">Últimos 6 meses</p>
-              <div className="mt-4 space-y-3">
-                {monthlyExpenseSeries.map((item) => (
-                  <div key={item.month} className="flex items-center gap-3">
-                    <span className="w-8 text-sm font-semibold text-[var(--text)]">{item.month}</span>
-                    <div className="h-3 flex-1 overflow-hidden rounded-full bg-[rgba(22,58,112,0.1)]">
-                      <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${Math.min(item.inversiones / 700, 100)}%` }} />
-                    </div>
-                    <span className="text-sm text-[var(--muted)]">${item.inversiones.toLocaleString('es-AR')}</span>
-                  </div>
-                ))}
-              </div>
+
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[rgba(22,58,112,0.08)] px-4 py-2 text-sm font-semibold text-[var(--text)]">
+              <TrendingUp className="h-4 w-4" />
+              Inversiones
             </div>
+
+            <h2 className="mt-5 text-3xl font-bold text-[var(--text)]">
+              Proximamente. En desarrollo.
+            </h2>
+            <p className="mt-3 max-w-xl text-base text-[var(--muted)]">
+              Esta seccion va a quedar disponible mas adelante, cuando terminemos la etapa actual de implementacion.
+            </p>
           </div>
-        </SectionPanel>
-      </div>
+        </div>
+      </SectionPanel>
     </div>
   );
 };

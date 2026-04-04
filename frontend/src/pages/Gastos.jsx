@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Plus, RefreshCw, Search, Tag, Wallet, X } from 'lucide-react';
+import { CalendarDays, Pencil, Plus, RefreshCw, Search, Tag, Trash2, Wallet, X } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
 import StatCard from '../components/ui/StatCard';
@@ -43,8 +43,10 @@ const Gastos = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeletingId, setIsDeletingId] = useState(null);
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
+  const [editingGasto, setEditingGasto] = useState(null);
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
   const [categoryError, setCategoryError] = useState('');
@@ -127,6 +129,7 @@ const Gastos = () => {
   const openCreateForm = () => {
     setFormError('');
     setCategoryError('');
+    setEditingGasto(null);
     setIsCategoryFormOpen(!categorias.length);
 
     setForm((current) => ({
@@ -141,6 +144,22 @@ const Gastos = () => {
     setFormError('');
     setCategoryError('');
     setIsCategoryFormOpen(false);
+    setEditingGasto(null);
+  };
+
+  const openEditForm = (gasto) => {
+    setFormError('');
+    setCategoryError('');
+    setEditingGasto(gasto);
+    setIsCategoryFormOpen(false);
+    setForm({
+      monto_ars: String(gasto.monto_ars || ''),
+      categoria_id: String(gasto.categoria_id || ''),
+      fecha: formatDateInput(gasto.fecha),
+      descripcion: gasto.descripcion || '',
+      etiquetas: gasto.etiquetas?.join(', ') || ''
+    });
+    setIsCreateOpen(true);
   };
 
   const handleChange = (event) => {
@@ -218,7 +237,7 @@ const Gastos = () => {
       setIsSubmitting(true);
       setFormError('');
 
-      await api.post('/gastos/', {
+      const payload = {
         monto_ars: Number(form.monto_ars),
         fecha: new Date(`${form.fecha}T12:00:00`).toISOString(),
         categoria_id: Number(form.categoria_id),
@@ -230,7 +249,13 @@ const Gastos = () => {
               .filter(Boolean)
           : null,
         monto_usd: null
-      });
+      };
+
+      if (editingGasto) {
+        await api.put(`/gastos/${editingGasto.id}`, payload);
+      } else {
+        await api.post('/gastos/', payload);
+      }
 
       closeCreateForm();
       await loadData();
@@ -246,13 +271,35 @@ const Gastos = () => {
     }
   };
 
+  const handleDelete = async (gasto) => {
+    const confirmed = window.confirm(
+      `Vas a eliminar el gasto "${gasto.descripcion || 'Sin descripción'}". Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setIsDeletingId(gasto.id);
+      setError('');
+      await api.delete(`/gastos/${gasto.id}`);
+      await loadData();
+    } catch (requestError) {
+      const detail = requestError.response?.data?.detail;
+      setError(typeof detail === 'string' ? detail : 'No se pudo eliminar el gasto.');
+    } finally {
+      setIsDeletingId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <section className="glass-panel px-5 py-6 sm:px-8">
         <PageHeader
           eyebrow="Gestión de gastos"
-          title="Tus gastos con datos reales"
-          description="La vista se apoya en categorías y movimientos del backend, con un formulario básico para registrar nuevos gastos."
+          title="Registro y seguimiento de gastos"
+          description="Consultá tus movimientos, aplicá filtros y administrá cada gasto desde un mismo lugar."
           actions={
             <>
               <button className="secondary-button" onClick={loadData} type="button">
@@ -306,7 +353,7 @@ const Gastos = () => {
 
       <SectionPanel
         title="Listado de gastos"
-        description="Consulta básica de movimientos registrados con búsqueda por descripción, categoría o etiquetas."
+        description="Listado de movimientos con búsqueda, edición y eliminación."
       >
         <div className="mb-5 grid gap-3 lg:grid-cols-[1.2fr_0.8fr_0.6fr]">
           <label className="input-shell">
@@ -358,16 +405,17 @@ const Gastos = () => {
 
         {!error && !isLoading && filteredGastos.length ? (
           <div className="overflow-hidden rounded-[24px] border border-[rgba(16,37,66,0.08)]">
-            <div className="hidden grid-cols-[1.6fr_0.8fr_0.8fr_0.8fr] gap-4 bg-[rgba(22,58,112,0.06)] px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)] lg:grid">
+            <div className="hidden grid-cols-[1.6fr_0.8fr_0.8fr_0.8fr_1fr] gap-4 bg-[rgba(22,58,112,0.06)] px-5 py-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)] lg:grid">
               <span>Descripción</span>
               <span>Categoría</span>
               <span>Fecha</span>
               <span className="text-right">Monto</span>
+              <span className="text-right">Acciones</span>
             </div>
 
             <div className="divide-y divide-[rgba(16,37,66,0.08)] bg-white/70">
               {filteredGastos.map((gasto) => (
-                <div key={gasto.id} className="grid gap-3 px-5 py-4 lg:grid-cols-[1.6fr_0.8fr_0.8fr_0.8fr] lg:items-center">
+                <div key={gasto.id} className="grid gap-3 px-5 py-4 lg:grid-cols-[1.6fr_0.8fr_0.8fr_0.8fr_1fr] lg:items-center">
                   <div>
                     <p className="font-semibold text-[var(--text)]">{gasto.descripcion || 'Sin descripción'}</p>
                     <p className="text-sm text-[var(--muted)]">
@@ -381,6 +429,21 @@ const Gastos = () => {
                   <p className="text-right text-sm font-semibold text-[var(--text)]">
                     {formatCurrency(gasto.monto_ars)}
                   </p>
+                  <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+                    <button className="secondary-button px-3 py-2" onClick={() => openEditForm(gasto)} type="button">
+                      <Pencil className="h-4 w-4" />
+                      Editar
+                    </button>
+                    <button
+                      className="secondary-button px-3 py-2 text-[var(--danger)]"
+                      disabled={isDeletingId === gasto.id}
+                      onClick={() => handleDelete(gasto)}
+                      type="button"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {isDeletingId === gasto.id ? 'Eliminando...' : 'Eliminar'}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -394,9 +457,13 @@ const Gastos = () => {
             <div className="sticky top-0 z-10 border-b border-[rgba(16,37,66,0.08)] bg-white/85 px-5 py-4 backdrop-blur sm:px-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
-                  <p className="eyebrow">Nuevo gasto</p>
-                  <h2 className="text-2xl font-bold text-[var(--text)]">Registrar gasto</h2>
-                  <p className="text-sm text-[var(--muted)]">Formulario básico alineado con el backend actual.</p>
+                  <p className="eyebrow">{editingGasto ? 'Editar gasto' : 'Nuevo gasto'}</p>
+                  <h2 className="text-2xl font-bold text-[var(--text)]">{editingGasto ? 'Modificar gasto' : 'Registrar gasto'}</h2>
+                  <p className="text-sm text-[var(--muted)]">
+                    {editingGasto
+                      ? 'Actualizá los datos del movimiento seleccionado.'
+                      : 'Completá los datos del movimiento para registrarlo.'}
+                  </p>
                 </div>
                 <button className="secondary-button px-3 py-2" onClick={closeCreateForm} type="button">
                   <X className="h-4 w-4" />
@@ -585,8 +652,8 @@ const Gastos = () => {
                       Limpiar
                     </button>
                     <button className="primary-button" disabled={isSubmitting || !categorias.length} type="submit">
-                      <Plus className="h-4 w-4" />
-                      {isSubmitting ? 'Guardando...' : 'Guardar gasto'}
+                      {editingGasto ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                      {isSubmitting ? 'Guardando...' : editingGasto ? 'Guardar cambios' : 'Guardar gasto'}
                     </button>
                   </div>
                 </form>

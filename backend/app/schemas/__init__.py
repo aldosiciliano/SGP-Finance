@@ -18,6 +18,14 @@ from .gasto import (
     GastoResponse,
     GastoUpdate
 )
+from .presupuesto import (
+    PresupuestoBase,
+    PresupuestoCreate,
+    PresupuestoUpdate,
+    PresupuestoResponse,
+    PresupuestoCategoriaResumen,
+    PresupuestoResumenResponse
+)
 
 __all__ = [
     "UsuarioBase",
@@ -32,5 +40,11 @@ __all__ = [
     "GastoBase",
     "GastoCreate",
     "GastoResponse",
-    "GastoUpdate"
+    "GastoUpdate",
+    "PresupuestoBase",
+    "PresupuestoCreate",
+    "PresupuestoUpdate",
+    "PresupuestoResponse",
+    "PresupuestoCategoriaResumen",
+    "PresupuestoResumenResponse"
 ]

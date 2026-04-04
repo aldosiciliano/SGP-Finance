@@ -4,13 +4,13 @@ import { useAuth } from '../../contexts/AuthContext';
 import { 
   Home, 
   CreditCard, 
+  PiggyBank,
   TrendingUp, 
   FileText, 
   LogOut, 
   User,
-  DollarSign,
-  Bell,
-  Wallet
+  Wallet,
+  ChevronRight
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -20,6 +20,7 @@ const Navbar = () => {
   const navigation = [
     { to: '/dashboard', label: 'Panel', icon: Home },
     { to: '/gastos', label: 'Gastos', icon: CreditCard },
+    { to: '/presupuesto', label: 'Presupuesto', icon: PiggyBank },
     { to: '/inversiones', label: 'Inversiones', icon: TrendingUp },
     { to: '/reportes', label: 'Reportes', icon: FileText }
   ];
@@ -31,27 +32,27 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-30 px-4 pt-4 sm:px-6 lg:px-8">
-      <nav className="glass-panel mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+      <nav className="glass-panel mx-auto grid max-w-7xl gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[auto_1fr_auto] lg:items-center">
         <div className="flex items-center justify-between gap-4">
-          <NavLink to="/dashboard" className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--primary)] text-[#eef5ff] shadow-lg">
+          <NavLink to="/dashboard" className="flex min-w-0 items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,var(--primary)_0%,var(--primary-strong)_100%)] text-[#eef5ff] shadow-lg">
               <Wallet className="h-6 w-6" />
             </div>
-            <div>
-              <p className="text-lg font-bold text-[var(--text)]">SGP Finance</p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="truncate text-lg font-bold text-[var(--text)]">SGP Finance</p>
+                <span className="hidden rounded-full border border-[rgba(16,37,66,0.08)] bg-white/70 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)] sm:inline-flex">
+                  MVP
+                </span>
+              </div>
               <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted)]">
-                Control de gastos
+                Gestion personal
               </p>
             </div>
           </NavLink>
-
-          <div className="flex items-center gap-2 rounded-full bg-white/70 px-3 py-2 text-sm font-semibold text-[var(--accent)] lg:hidden">
-            <DollarSign className="h-4 w-4" />
-            USD $1.050
-          </div>
         </div>
 
-        <div className="flex flex-1 flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-white/45 p-2">
           {navigation.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -60,8 +61,8 @@ const Navbar = () => {
                 [
                   'inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition duration-200',
                   isActive
-                    ? 'bg-[var(--primary)] text-[#eef5ff] shadow-lg'
-                    : 'bg-white/60 text-[var(--muted)] hover:bg-white/90 hover:text-[var(--text)]'
+                    ? 'bg-[var(--primary)] text-[#eef5ff] shadow-lg shadow-[0_12px_24px_rgba(13,41,80,0.18)]'
+                    : 'text-[var(--muted)] hover:bg-white/80 hover:text-[var(--text)]'
                 ].join(' ')
               }
             >
@@ -71,29 +72,22 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="hidden items-center gap-3 rounded-2xl bg-[rgba(29,138,103,0.1)] px-4 py-3 text-sm text-[var(--accent)] md:flex">
-            <Bell className="h-4 w-4" />
-            <div>
-              <p className="font-semibold">Cotización de referencia</p>
-              <p className="text-xs text-[var(--muted)]">USD oficial $1.050 · Blue $1.215</p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/75 px-4 py-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[rgba(22,58,112,0.08)] text-[var(--primary)]">
+        <div className="flex items-center">
+          <div className="flex w-full items-center justify-between gap-3 rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-white/75 px-4 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[rgba(22,58,112,0.08)] text-[var(--primary)]">
                 <User className="h-5 w-5" />
               </div>
-              <div>
-                <p className="text-sm font-semibold text-[var(--text)]">{user?.nombre || 'Usuario'}</p>
-                <p className="text-xs text-[var(--muted)]">{user?.email}</p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-[var(--text)]">{user?.nombre || 'Usuario'}</p>
+                <p className="truncate text-xs text-[var(--muted)]">{user?.email}</p>
               </div>
             </div>
 
-            <button onClick={handleLogout} className="secondary-button px-3 py-2">
+            <button onClick={handleLogout} className="secondary-button shrink-0 px-3 py-2">
               <LogOut className="h-4 w-4" />
-              Salir
+              <span className="hidden sm:inline">Salir</span>
+              <ChevronRight className="hidden h-4 w-4 sm:inline" />
             </button>
           </div>
         </div>

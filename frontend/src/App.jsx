@@ -5,6 +5,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppShell from './components/layout/AppShell';
 import Dashboard from './pages/Dashboard';
 import Gastos from './pages/Gastos';
+import Presupuesto from './pages/Presupuesto';
 import Inversiones from './pages/Inversiones';
 import Reportes from './pages/Reportes';
 import Login from './pages/Login';
@@ -29,6 +30,7 @@ function App() {
             <Route path="/" element={withShell(Dashboard)} />
             <Route path="/dashboard" element={withShell(Dashboard)} />
             <Route path="/gastos" element={withShell(Gastos)} />
+            <Route path="/presupuesto" element={withShell(Presupuesto)} />
             <Route path="/inversiones" element={withShell(Inversiones)} />
             <Route path="/reportes" element={withShell(Reportes)} />
             <Route path="*" element={<Navigate to="/" replace />} />
