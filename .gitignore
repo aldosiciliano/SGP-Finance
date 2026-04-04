@@ -1,0 +1,27 @@
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+__pycache__/
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+
+# Vite cache
+frontend/.vite/
+.vite/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
