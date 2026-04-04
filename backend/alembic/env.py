@@ -10,13 +10,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from app.core.database import Base
 from app.models.usuario import Usuario
-
-# Temporalmente comentados para crear tabla por tabla
-# from app.models.categoria import Categoria
-# from app.models.gasto import Gasto
-# from app.models.inversion import Inversion
-# from app.models.tipo_cambio import TipoCambio
-# from app.models.presupuesto import Presupuesto
+from app.models.categoria import Categoria
+from app.models.gasto import Gasto
 
 # this is the Alembic Config object
 config = context.config

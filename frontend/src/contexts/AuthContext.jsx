@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 
 const AuthContext = createContext();
 
@@ -16,12 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Configurar axios para cookies
-  useEffect(() => {
-    axios.defaults.baseURL = 'http://localhost:8000';
-    axios.defaults.withCredentials = true;
-  }, []);
-
   // Verificar si el usuario está autenticado al cargar
   useEffect(() => {
     checkAuth();
@@ -30,7 +24,7 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/auth/me');
+      const response = await api.get('/auth/me');
       setUser(response.data);
       setError(null);
     } catch (err) {
@@ -44,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await axios.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, password });
       
       // Después del login exitoso, verificar usuario
       await checkAuth();
@@ -68,7 +62,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error('La contraseña no puede tener más de 72 caracteres');
       }
       
-      const response = await axios.post('/auth/register', {
+      const response = await api.post('/auth/register', {
         email,
         password,
         nombre
@@ -89,7 +83,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post('/auth/logout');
+      await api.post('/auth/logout');
       setUser(null);
       setError(null);
     } catch (err) {

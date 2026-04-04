@@ -7,6 +7,17 @@ from .auth import (
     TokenData,
     UsuarioLogin
 )
+from .categoria import (
+    CategoriaBase,
+    CategoriaCreate,
+    CategoriaResponse
+)
+from .gasto import (
+    GastoBase,
+    GastoCreate,
+    GastoResponse,
+    GastoUpdate
+)
 
 __all__ = [
     "UsuarioBase",
@@ -14,5 +25,12 @@ __all__ = [
     "UsuarioResponse",
     "Token",
     "TokenData",
-    "UsuarioLogin"
+    "UsuarioLogin",
+    "CategoriaBase",
+    "CategoriaCreate",
+    "CategoriaResponse",
+    "GastoBase",
+    "GastoCreate",
+    "GastoResponse",
+    "GastoUpdate"
 ]

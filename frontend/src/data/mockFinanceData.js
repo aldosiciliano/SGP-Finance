@@ -37,6 +37,29 @@ export const expensesBoard = [
   { item: 'Cena familiar', category: 'Ocio', paymentMethod: 'Débito', date: '30 Mar', amount: '$22.600', note: 'Cumpleaños mamá' }
 ];
 
+export const expenseFormCategories = [
+  { name: 'Alimentos', hint: 'Compras diarias y supermercado' },
+  { name: 'Servicios', hint: 'Luz, gas, internet y suscripciones' },
+  { name: 'Transporte', hint: 'Combustible, peajes y viajes' },
+  { name: 'Hogar', hint: 'Mantenimiento y compras del hogar' },
+  { name: 'Salud', hint: 'Farmacia, consultas y estudios' },
+  { name: 'Ocio', hint: 'Salidas, hobbies y entretenimiento' }
+];
+
+export const expensePaymentMethods = [
+  'Débito',
+  'Crédito',
+  'Transferencia',
+  'Efectivo',
+  'Billetera virtual'
+];
+
+export const expenseFormInsights = [
+  { label: 'Carga recomendada', value: 'Menos de 45 seg', detail: 'Campos mínimos primero, detalle opcional después' },
+  { label: 'Última categoría usada', value: 'Alimentos', detail: 'Acelera la carga repetitiva del día a día' },
+  { label: 'Control inmediato', value: 'Impacto en presupuesto', detail: 'El usuario entiende el efecto antes de guardar' }
+];
+
 export const investmentPortfolio = [
   { asset: 'FCI Money Market', allocation: '35%', amount: '$420.000', return: '+3,8%', risk: 'Bajo' },
   { asset: 'Bonos CER', allocation: '25%', amount: '$310.000', return: '+6,2%', risk: 'Medio' },
