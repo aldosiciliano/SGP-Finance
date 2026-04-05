@@ -26,6 +26,15 @@ from .presupuesto import (
     PresupuestoCategoriaResumen,
     PresupuestoResumenResponse
 )
+from .reportes import (
+    ReporteMensualItem,
+    ReporteMensualResponse,
+    ReporteCategoriaItem,
+    ReporteCategoriasResponse,
+    ReporteComparativaCategoriaItem,
+    ReporteComparativaPeriodo,
+    ReporteComparativaResponse,
+)
 
 __all__ = [
     "UsuarioBase",
@@ -46,5 +55,12 @@ __all__ = [
     "PresupuestoUpdate",
     "PresupuestoResponse",
     "PresupuestoCategoriaResumen",
-    "PresupuestoResumenResponse"
+    "PresupuestoResumenResponse",
+    "ReporteMensualItem",
+    "ReporteMensualResponse",
+    "ReporteCategoriaItem",
+    "ReporteCategoriasResponse",
+    "ReporteComparativaCategoriaItem",
+    "ReporteComparativaPeriodo",
+    "ReporteComparativaResponse",
 ]

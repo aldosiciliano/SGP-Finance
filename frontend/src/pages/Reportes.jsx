@@ -1,154 +1,386 @@
-import React from 'react';
-import { ArrowRight, BarChart3, CalendarRange, FileText, LineChart, PieChart, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from 'recharts';
+import { ArrowRightLeft, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
+import StatCard from '../components/ui/StatCard';
+import api from '../lib/api';
 
-const reportBlocks = [
-  {
-    title: 'Tendencias mensuales',
-    description: 'Lectura histórica de gasto real, presupuesto y desvíos por período.',
-    icon: LineChart
-  },
-  {
-    title: 'Categorías más pesadas',
-    description: 'Ranking de rubros que concentran mayor parte del consumo y su evolución.',
-    icon: PieChart
-  },
-  {
-    title: 'Comparativas entre períodos',
-    description: 'Vista para medir variación frente al mes anterior y detectar cambios de hábito.',
-    icon: CalendarRange
-  },
-  {
-    title: 'Hallazgos accionables',
-    description: 'Insights y alertas simples para entender dónde conviene intervenir primero.',
-    icon: Sparkles
-  }
-];
+const LoadingRows = ({ rows = 3 }) => (
+  <div className="space-y-3">
+    {Array.from({ length: rows }, (_, index) => (
+      <div
+        key={index}
+        className="h-16 animate-pulse rounded-2xl border border-[rgba(16,37,66,0.06)] bg-[rgba(22,58,112,0.05)]"
+      />
+    ))}
+  </div>
+);
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    maximumFractionDigits: 0
+  }).format(Number(value || 0));
+
+const formatPercent = (value) => {
+  if (value === null || value === undefined) return 'Sin base';
+  return `${value > 0 ? '+' : ''}${Number(value).toFixed(1)}%`;
+};
+
+const formatMonthYear = (year, month) => {
+  if (!year || !month) return 'Sin base';
+
+  return new Date(year, month - 1, 1).toLocaleDateString('es-AR', {
+    month: 'long',
+    year: 'numeric'
+  });
+};
+
+const buildPeriodOptions = (count = 12) => {
+  const now = new Date();
+
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    return {
+      value: `${year}-${String(month).padStart(2, '0')}`,
+      label: formatMonthYear(year, month),
+      month,
+      year
+    };
+  });
+};
+
+const tooltipFormatter = (value) => formatCurrency(value);
+const chartMargin = { left: 4, right: 8, top: 4, bottom: 4 };
 
 const Reportes = () => {
+  const periodOptions = useMemo(() => buildPeriodOptions(), []);
+  const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]?.value || '');
+  const [categoryReport, setCategoryReport] = useState({ categorias: [], total_gastado: 0 });
+  const [comparisonReport, setComparisonReport] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const [selectedYear, selectedMonth] = useMemo(() => {
+    const [year, month] = selectedPeriod.split('-').map(Number);
+    return [year, month];
+  }, [selectedPeriod]);
+
+  useEffect(() => {
+    if (!selectedMonth || !selectedYear) return;
+
+    const loadReportes = async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+
+        const [categoriesResponse, comparisonResponse] = await Promise.all([
+          api.get('/reportes/categorias', {
+            params: {
+              mes: selectedMonth,
+              anio: selectedYear
+            }
+          }),
+          api.get('/reportes/comparativa', {
+            params: {
+              mes: selectedMonth,
+              anio: selectedYear
+            }
+          })
+        ]);
+
+        setCategoryReport(categoriesResponse.data);
+        setComparisonReport(comparisonResponse.data);
+      } catch (requestError) {
+        setError(requestError.response?.data?.detail || 'No se pudieron cargar los reportes.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadReportes();
+  }, [selectedMonth, selectedYear]);
+
+  const selectedPeriodLabel = useMemo(
+    () => periodOptions.find((option) => option.value === selectedPeriod)?.label || '',
+    [periodOptions, selectedPeriod]
+  );
+
+  const topCategory = categoryReport.categorias?.[0];
+  const comparisonDelta = Number(comparisonReport?.diferencia_gastado || 0);
+  const budgetGap = Number(comparisonReport?.actual?.total_gastado || 0) - Number(comparisonReport?.actual?.total_presupuestado || 0);
+  const budgetGapTone = budgetGap > 0 ? 'danger' : 'success';
+
+  const categoryAnalysis = useMemo(
+    () =>
+      (categoryReport.categorias || []).map((item) => {
+        const totalGastado = Number(item.total_gastado || 0);
+        const totalPresupuestado = Number(item.total_presupuestado || 0);
+        const diferencia = totalGastado - totalPresupuestado;
+
+        return {
+          ...item,
+          total_gastado: totalGastado,
+          total_presupuestado: totalPresupuestado,
+          participacion: Number(item.participacion || 0),
+          diferencia,
+          uso_presupuesto: totalPresupuestado > 0 ? (totalGastado / totalPresupuestado) * 100 : null
+        };
+      }),
+    [categoryReport.categorias]
+  );
+
+  const comparisonCategories = useMemo(
+    () =>
+      (comparisonReport?.categorias || []).map((item) => ({
+        ...item,
+        actual: Number(item.actual || 0),
+        anterior: Number(item.anterior || 0),
+        diferencia: Number(item.diferencia || 0)
+      })),
+    [comparisonReport]
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Reportes"
-        title="Espacio de análisis y lectura histórica"
-        description="El dashboard ya quedó enfocado en seguimiento diario. Esta sección concentra comparación, tendencias y análisis para evitar mezclar operaciones con lectura estratégica."
-        actions={
-          <Link className="secondary-button" to="/dashboard">
-            Volver al panel
-          </Link>
-        }
+        title="Comparativas y desvíos"
+        description="Cambios entre períodos y desvíos contra presupuesto."
+        actions={(
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <select
+              className="input min-w-[220px]"
+              value={selectedPeriod}
+              onChange={(event) => setSelectedPeriod(event.target.value)}
+            >
+              {periodOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       />
 
-      <SectionPanel className="overflow-hidden p-0">
-        <div className="relative grid gap-6 bg-[linear-gradient(135deg,rgba(245,248,253,0.96),rgba(227,236,248,0.98))] px-6 py-6 sm:px-8 sm:py-8 lg:grid-cols-[1.25fr_0.95fr]">
-          <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-[rgba(22,58,112,0.10)] blur-3xl" />
-          <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-[rgba(29,138,103,0.10)] blur-3xl" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard
+          title="Presupuesto"
+          value={isLoading ? '...' : formatCurrency(comparisonReport?.actual?.total_presupuestado)}
+          detail={selectedPeriodLabel}
+          trend={error ? 'Sin datos' : 'Objetivo del período'}
+          icon={TrendingUp}
+          tone="warning"
+        />
+        <StatCard
+          title="Desvío total"
+          value={isLoading ? '...' : formatCurrency(budgetGap)}
+          detail={selectedPeriodLabel}
+          trend={
+            error
+              ? 'Sin datos'
+              : budgetGap > 0
+                ? 'Por encima del presupuesto'
+                : budgetGap < 0
+                  ? 'Por debajo del presupuesto'
+                  : 'En línea con el presupuesto'
+          }
+          icon={ArrowRightLeft}
+          tone={budgetGapTone}
+        />
+        <StatCard
+          title="Categoría líder"
+          value={isLoading ? '...' : topCategory?.categoria_nombre || 'Sin datos'}
+          detail={isLoading ? 'Cargando' : topCategory ? formatCurrency(topCategory.total_gastado) : 'Sin movimientos'}
+          trend={error ? 'Sin datos' : topCategory ? `${Number(topCategory.participacion).toFixed(1)}% del gasto` : 'Sin datos'}
+          icon={PieChartIcon}
+          tone="success"
+        />
+      </div>
 
-          <div className="relative space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(16,37,66,0.08)] bg-white/80 px-4 py-2 text-sm font-semibold text-[var(--text)]">
-              <FileText className="h-4 w-4 text-[var(--primary)]" />
-              Propuesta UX/UI aplicada
+      {error ? (
+        <SectionPanel>
+          <p className="text-sm font-semibold text-[var(--danger)]">{error}</p>
+        </SectionPanel>
+      ) : null}
+
+      <div className="grid gap-6 xl:grid-cols-[1fr_1.2fr]">
+        <SectionPanel
+          title="Comparativa contra el período anterior"
+          description="Resumen del período elegido frente al anterior."
+        >
+          <div className="space-y-4">
+            <div className="rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-[rgba(22,58,112,0.04)] p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--primary)]">Actual</p>
+              <p className="mt-2 text-2xl font-bold text-[var(--text)]">
+                {isLoading ? '...' : formatCurrency(comparisonReport?.actual?.total_gastado)}
+              </p>
+              <p className="mt-1 text-sm text-[var(--muted)]">{selectedPeriodLabel}</p>
             </div>
 
-            <div className="space-y-3">
-              <h2 className="max-w-2xl text-3xl font-bold text-[var(--text)] sm:text-4xl">
-                Reportes deja de ser un “módulo cerrado” y pasa a ser un destino claro dentro del producto.
-              </h2>
-              <p className="max-w-xl text-sm text-[var(--muted)] sm:text-base">
-                Aunque falte implementación analítica, esta pantalla ya comunica intención de producto, alcance funcional y próxima evolución. Eso mejora consistencia y evita pantallas muertas.
+            <div className="rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-[rgba(29,138,103,0.05)] p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">Anterior</p>
+              <p className="mt-2 text-2xl font-bold text-[var(--text)]">
+                {isLoading ? '...' : formatCurrency(comparisonReport?.anterior?.total_gastado)}
+              </p>
+              <p className="mt-1 text-sm text-[var(--muted)]">
+                {isLoading ? 'Cargando' : formatMonthYear(comparisonReport?.anterior?.anio, comparisonReport?.anterior?.mes)}
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-white/75 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--primary)]">Dashboard</p>
-                <p className="mt-2 text-lg font-bold text-[var(--text)]">Seguimiento operativo</p>
-                <p className="mt-2 text-sm text-[var(--muted)]">Estado actual, movimientos recientes, distribución y presupuesto del mes.</p>
-              </div>
-              <div className="rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-white/75 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">Reportes</p>
-                <p className="mt-2 text-lg font-bold text-[var(--text)]">Lectura analítica</p>
-                <p className="mt-2 text-sm text-[var(--muted)]">Tendencias, comparativas, variaciones e interpretación histórica.</p>
-              </div>
+            <div className="rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-white/75 p-4">
+              <p className="text-sm font-semibold text-[var(--text)]">Lectura</p>
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                {isLoading
+                  ? 'Calculando variación...'
+                  : comparisonDelta > 0
+                    ? `Subió ${formatCurrency(comparisonDelta)} vs el período anterior.`
+                    : comparisonDelta < 0
+                      ? `Bajó ${formatCurrency(Math.abs(comparisonDelta))} vs el período anterior.`
+                      : 'Sin cambios contra el período anterior.'}
+              </p>
+              <p className="mt-2 text-xs font-semibold text-[var(--muted)]">
+                {isLoading ? 'Cargando' : formatPercent(comparisonReport?.variacion_gastado_porcentual)}
+              </p>
             </div>
           </div>
+        </SectionPanel>
 
-          <div className="relative rounded-[30px] border border-[rgba(16,37,66,0.08)] bg-[linear-gradient(160deg,#102542_0%,#0a1a31_100%)] p-6 text-[#eef5ff] shadow-[0_24px_50px_rgba(13,41,80,0.16)]">
-            <div className="flex items-center justify-between">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#d9e7f7]">
-                <BarChart3 className="h-4 w-4" />
-                Objetivo
+        <SectionPanel
+          title="Desvío contra presupuesto"
+          description="Categorías sobre o bajo presupuesto."
+        >
+          <div className="h-[300px] sm:h-[320px]">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="w-full animate-pulse space-y-3">
+                  <div className="h-5 w-40 rounded-full bg-[rgba(22,58,112,0.08)]" />
+                  <div className="h-5 w-52 rounded-full bg-[rgba(22,58,112,0.08)]" />
+                  <div className="h-5 w-32 rounded-full bg-[rgba(22,58,112,0.08)]" />
+                  <div className="h-5 w-44 rounded-full bg-[rgba(22,58,112,0.08)]" />
+                </div>
               </div>
-              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9fb6d3]">Siguiente etapa</span>
-            </div>
-
-            <h3 className="mt-5 text-2xl font-bold">Convertir datos sueltos en decisiones.</h3>
-            <p className="mt-3 text-sm text-[#c3d4ea]">
-              La propuesta UX/UI separa claramente la lectura de corto plazo del análisis profundo. Eso ordena navegación, reduce ruido y prepara mejor la evolución del módulo.
-            </p>
-
-            <div className="mt-6 space-y-3">
-              <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3">
-                <p className="text-sm font-semibold">1. Tendencia mensual</p>
-                <p className="mt-1 text-sm text-[#c3d4ea]">Serie histórica de gasto vs presupuesto.</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3">
-                <p className="text-sm font-semibold">2. Comparación contra período anterior</p>
-                <p className="mt-1 text-sm text-[#c3d4ea]">Cambios porcentuales y focos de desvío.</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/6 px-4 py-3">
-                <p className="text-sm font-semibold">3. Ranking de categorías</p>
-                <p className="mt-1 text-sm text-[#c3d4ea]">Identificación rápida de rubros dominantes.</p>
-              </div>
-            </div>
+            ) : categoryAnalysis.length ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={categoryAnalysis} layout="vertical" margin={chartMargin}>
+                  <CartesianGrid stroke="rgba(16,37,66,0.08)" horizontal={false} />
+                  <XAxis type="number" tickFormatter={tooltipFormatter} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="categoria_nombre" axisLine={false} tickLine={false} width={92} />
+                  <Tooltip formatter={tooltipFormatter} />
+                  <Bar dataKey="diferencia" radius={[0, 12, 12, 0]}>
+                    {categoryAnalysis.map((item, index) => (
+                      <Cell
+                        key={`${item.categoria_nombre}-${index}`}
+                        fill={item.diferencia > 0 ? '#c85757' : '#1d8a67'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">Sin categorías para comparar.</div>
+            )}
           </div>
-        </div>
-      </SectionPanel>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {reportBlocks.map(({ title, description, icon: Icon }) => (
-          <SectionPanel key={title}>
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[rgba(22,58,112,0.10)] text-[var(--primary)]">
-                <Icon className="h-6 w-6" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold text-[var(--text)]">{title}</h3>
-                <p className="text-sm text-[var(--muted)]">{description}</p>
-              </div>
-            </div>
-          </SectionPanel>
-        ))}
+        </SectionPanel>
       </div>
 
-      <SectionPanel
-        title="Próximo entregable"
-        description="Qué tendría que implementarse en backend y frontend para convertir esta propuesta en reportes funcionales."
-      >
-        <div className="grid gap-3 lg:grid-cols-3">
-          <div className="rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-[rgba(22,58,112,0.03)] p-4">
-            <p className="text-sm font-semibold text-[var(--text)]">Agregación por períodos</p>
-            <p className="mt-2 text-sm text-[var(--muted)]">Endpoint mensual para gasto, presupuesto y variación.</p>
+      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.35fr]">
+        <SectionPanel
+          title="Participación por categoría"
+          description="Peso de cada categoría en el período."
+        >
+          <div className="space-y-3">
+            {isLoading ? (
+              <LoadingRows rows={4} />
+            ) : categoryAnalysis.length ? (
+              categoryAnalysis.map((item) => (
+                <div key={item.categoria_nombre} className="rounded-2xl border border-[rgba(16,37,66,0.08)] bg-white/70 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-[var(--text)]">{item.categoria_nombre}</p>
+                    <p className="text-sm font-semibold text-[var(--text)]">{item.participacion.toFixed(1)}%</p>
+                  </div>
+                  <div className="mt-2 flex flex-col gap-1 text-sm text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                    <span>{formatCurrency(item.total_gastado)}</span>
+                    <span className="sm:text-right">
+                      {item.uso_presupuesto === null ? 'Sin presupuesto' : `${Math.round(item.uso_presupuesto)}% del presupuesto`}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex h-[220px] items-center justify-center text-sm text-[var(--muted)]">Sin movimientos.</div>
+            )}
           </div>
-          <div className="rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-[rgba(22,58,112,0.03)] p-4">
-            <p className="text-sm font-semibold text-[var(--text)]">Comparativas</p>
-            <p className="mt-2 text-sm text-[var(--muted)]">Lectura contra mes anterior y ranking por categorías.</p>
-          </div>
-          <div className="rounded-[24px] border border-[rgba(16,37,66,0.08)] bg-[rgba(22,58,112,0.03)] p-4">
-            <p className="text-sm font-semibold text-[var(--text)]">Narrativa visual</p>
-            <p className="mt-2 text-sm text-[var(--muted)]">Gráficos y métricas interpretables, no solo números aislados.</p>
-          </div>
-        </div>
+        </SectionPanel>
 
-        <div className="mt-5">
-          <Link className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--primary)]" to="/dashboard">
-            Volver al dashboard operativo
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </SectionPanel>
+        <SectionPanel
+          title="Categorías con mayor variación"
+          description="Mayores cambios vs el período anterior."
+        >
+          <div className="h-[280px] sm:h-[300px]">
+            {isLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <div className="w-full animate-pulse space-y-3">
+                  <div className="h-5 w-44 rounded-full bg-[rgba(22,58,112,0.08)]" />
+                  <div className="h-5 w-32 rounded-full bg-[rgba(22,58,112,0.08)]" />
+                  <div className="h-5 w-48 rounded-full bg-[rgba(22,58,112,0.08)]" />
+                  <div className="h-5 w-36 rounded-full bg-[rgba(22,58,112,0.08)]" />
+                </div>
+              </div>
+            ) : comparisonCategories.length ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={comparisonCategories} layout="vertical" margin={chartMargin}>
+                  <CartesianGrid stroke="rgba(16,37,66,0.08)" horizontal={false} />
+                  <XAxis type="number" tickFormatter={tooltipFormatter} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="categoria_nombre" axisLine={false} tickLine={false} width={92} />
+                  <Tooltip formatter={tooltipFormatter} />
+                  <Bar dataKey="diferencia" radius={[0, 12, 12, 0]}>
+                    {comparisonCategories.map((item, index) => (
+                      <Cell
+                        key={`${item.categoria_nombre}-${index}`}
+                        fill={item.diferencia >= 0 ? '#c85757' : '#1d8a67'}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">Sin historial suficiente.</div>
+            )}
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {comparisonCategories.slice(0, 4).map((item) => (
+              <div key={item.categoria_nombre} className="flex flex-col gap-3 rounded-2xl border border-[rgba(16,37,66,0.08)] bg-white/72 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-[var(--text)]">{item.categoria_nombre}</p>
+                  <p className="mt-1 text-sm text-[var(--muted)]">
+                    {formatCurrency(item.actual)} ahora vs {formatCurrency(item.anterior)} antes
+                  </p>
+                </div>
+                <div className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${item.diferencia >= 0 ? 'bg-[rgba(200,87,87,0.12)] text-[var(--danger)]' : 'bg-[rgba(29,138,103,0.12)] text-[var(--success)]'}`}>
+                  {formatPercent(item.variacion_porcentual)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </SectionPanel>
+      </div>
     </div>
   );
 };
