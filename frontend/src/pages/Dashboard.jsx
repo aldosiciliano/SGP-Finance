@@ -16,8 +16,7 @@ import {
   ChevronRight,
   CreditCard,
   DollarSign,
-  Gauge,
-  Tag
+  Gauge
 } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
@@ -185,21 +184,6 @@ const Dashboard = () => {
     [categoriasById, gastos]
   );
 
-  const topBudgetCategories = useMemo(
-    () =>
-      [...(resumen.categorias || [])]
-        .sort((left, right) => Number(right.gastado || 0) - Number(left.gastado || 0))
-        .slice(0, 4)
-        .map((categoria, index) => ({
-          ...categoria,
-          color: CHART_COLORS[index % CHART_COLORS.length],
-          usage: Number(categoria.monto || 0) > 0
-            ? Math.round((Number(categoria.gastado || 0) / Number(categoria.monto || 1)) * 100)
-            : 0
-        })),
-    [resumen.categorias]
-  );
-
   const stats = useMemo(() => {
     const totalGastado = Number(resumen.total_gastado || 0);
     const totalPresupuestado = Number(resumen.total_presupuestado || 0);
@@ -336,11 +320,13 @@ const Dashboard = () => {
                   <PieChart>
                     <Pie
                       data={expenseCategories}
-                      dataKey="value"
+                      dataKey="amount"
                       nameKey="name"
                       innerRadius={55}
                       outerRadius={84}
                       paddingAngle={4}
+                      stroke="rgba(255,255,255,0.95)"
+                      strokeWidth={2}
                     >
                       {expenseCategories.map((entry) => (
                         <Cell key={entry.name} fill={entry.color} />
@@ -353,15 +339,21 @@ const Dashboard = () => {
 
               <div className="min-w-0 flex-1 space-y-2.5">
                 {expenseCategories.map((category) => (
-                  <div key={category.name} className="flex items-center justify-between gap-3 rounded-2xl bg-[rgba(22,58,112,0.04)] px-3 py-3 sm:px-4">
-                    <div className="min-w-0 flex flex-1 items-center gap-3">
-                      <span className="status-dot" style={{ backgroundColor: category.color }} />
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-[var(--text)]">{category.name}</p>
-                        <p className="text-xs text-[var(--muted)]">{category.value}% del mes</p>
+                  <div key={category.name} className="border-b border-[rgba(16,37,66,0.08)] pb-3 last:border-b-0 last:pb-0">
+                    <div className="flex items-start gap-3">
+                      <span className="status-dot mt-1 shrink-0" style={{ backgroundColor: category.color }} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="min-w-0 flex-1 break-words text-sm font-semibold leading-tight text-[var(--text)]">
+                            {category.name}
+                          </p>
+                          <p className="shrink-0 whitespace-nowrap text-sm font-semibold text-[var(--text)]">
+                            {formatCurrency(category.amount)}
+                          </p>
+                        </div>
+                        <p className="mt-1 text-xs font-medium text-[var(--muted)]">{category.value}% del mes</p>
                       </div>
                     </div>
-                    <p className="shrink-0 text-sm font-semibold text-[var(--text)]">{formatCurrency(category.amount)}</p>
                   </div>
                 ))}
               </div>
@@ -370,7 +362,7 @@ const Dashboard = () => {
         </SectionPanel>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(300px,1fr)]">
+      <div className="grid gap-6">
         <SectionPanel
           title="Últimos movimientos"
           action={
@@ -402,44 +394,6 @@ const Dashboard = () => {
                       <span className="pill whitespace-nowrap">Registrado</span>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </SectionPanel>
-
-        <SectionPanel title="Categorías más comprometidas">
-          {error ? (
-            <p className="text-sm text-[var(--danger)]">{error}</p>
-          ) : !topBudgetCategories.length ? (
-            <p className="text-sm text-[var(--muted)]">Cargá presupuestos para ver qué categorías están más exigidas este mes.</p>
-          ) : (
-            <div className="space-y-3">
-              {topBudgetCategories.map((expense) => (
-                <div key={expense.categoria_id} className="rounded-3xl border border-[rgba(16,37,66,0.08)] bg-white/70 p-4">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0 flex items-start gap-3">
-                      <span className="mt-1 flex h-8 w-8 items-center justify-center rounded-xl bg-[rgba(22,58,112,0.08)] text-[var(--primary)]">
-                        <Tag className="h-4 w-4" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-[var(--text)]">{expense.categoria_nombre}</p>
-                        <p className="text-sm text-[var(--muted)]">
-                          {formatCurrency(expense.gastado)} usados sobre {formatCurrency(expense.monto)}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="pill shrink-0 self-start whitespace-nowrap">{expense.usage}% usado</span>
-                  </div>
-                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-[rgba(16,37,66,0.08)]">
-                    <div
-                      className={`h-full rounded-full ${Number(expense.restante || 0) < 0 ? 'bg-[var(--danger)]' : 'bg-[var(--accent)]'}`}
-                      style={{ width: `${Math.min(expense.usage, 100)}%` }}
-                    />
-                  </div>
-                  <p className={`mt-3 text-sm font-semibold sm:text-base ${Number(expense.restante || 0) < 0 ? 'text-[var(--danger)]' : 'text-[var(--text)]'}`}>
-                    Restante: {formatCurrency(expense.restante)}
-                  </p>
                 </div>
               ))}
             </div>
