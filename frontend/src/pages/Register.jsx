@@ -47,7 +47,7 @@ const Register = () => {
   return (
     <AuthLayout
       title="Crear cuenta"
-      subtitle="Configurá tu acceso y empezá a ordenar gastos, presupuesto e inversiones desde una misma vista."
+      subtitle="Completá tus datos para continuar."
     >
       <form className="space-y-4" onSubmit={handleSubmit} autoComplete="on">
         <div className="rounded-3xl bg-[rgba(22,58,112,0.06)] px-4 py-3 text-center text-sm text-[var(--muted)] sm:text-left">
@@ -143,7 +143,7 @@ const Register = () => {
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             ) : (
-              'Crear Cuenta'
+              'Crear cuenta'
             )}
           </button>
         </div>

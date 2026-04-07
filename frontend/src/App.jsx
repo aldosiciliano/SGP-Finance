@@ -27,13 +27,13 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/" element={withShell(Dashboard)} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/dashboard" element={withShell(Dashboard)} />
             <Route path="/gastos" element={withShell(Gastos)} />
             <Route path="/presupuesto" element={withShell(Presupuesto)} />
             <Route path="/inversiones" element={withShell(Inversiones)} />
             <Route path="/reportes" element={withShell(Reportes)} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </div>
       </Router>

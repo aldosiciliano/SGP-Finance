@@ -16,14 +16,10 @@ const AuthLayout = ({ title, subtitle, children }) => {
               </div>
 
               <div className="max-w-xl rounded-[30px] border border-white/12 bg-white/10 p-6 backdrop-blur-sm xl:p-7">
-                <p className="text-xs uppercase tracking-[0.2em] text-[#8fd0bc]">Acceso financiero</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-[#8fd0bc]">Acceso</p>
                 <h1 className="mt-3 text-3xl font-bold leading-tight text-balance xl:text-5xl">
                   Diseñado para ver tus finanzas con claridad
                 </h1>
-                <p className="mt-4 max-w-lg text-sm leading-6 text-[#c3d4ea] xl:text-[15px]">
-                  Un acceso simple para entrar rápido a tu panel y trabajar con una interfaz más
-                  clara y ordenada.
-                </p>
               </div>
             </div>
           </div>

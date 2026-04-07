@@ -25,3 +25,8 @@ frontend/.vite/
 # OS
 .DS_Store
 Thumbs.db
+
+/backend/tests/
+/.pre-commit-config.yaml
+/docs/
+/scripts/
