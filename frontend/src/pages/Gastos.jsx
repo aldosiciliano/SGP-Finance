@@ -35,11 +35,45 @@ const formatDate = (value) =>
     year: 'numeric'
   }).format(new Date(value));
 
+const isSameDay = (firstDate, secondDate) =>
+  firstDate.getFullYear() === secondDate.getFullYear() &&
+  firstDate.getMonth() === secondDate.getMonth() &&
+  firstDate.getDate() === secondDate.getDate();
+
+const getDateFilterBoundaries = (referenceDate) => {
+  const weekStart = new Date(referenceDate);
+  weekStart.setDate(referenceDate.getDate() - 6);
+  weekStart.setHours(0, 0, 0, 0);
+
+  const monthStart = new Date(referenceDate);
+  monthStart.setMonth(referenceDate.getMonth() - 1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  return { weekStart, monthStart };
+};
+
+const matchesDateFilter = (gastoDate, dateFilter, referenceDate, boundaries) => {
+  if (dateFilter === 'day') {
+    return isSameDay(gastoDate, referenceDate);
+  }
+
+  if (dateFilter === 'week') {
+    return gastoDate >= boundaries.weekStart;
+  }
+
+  if (dateFilter === 'month') {
+    return gastoDate >= boundaries.monthStart;
+  }
+
+  return true;
+};
+
 const Gastos = () => {
   const [gastos, setGastos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,19 +98,30 @@ const Gastos = () => {
 
   const filteredGastos = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
+    const now = new Date();
+    const dateBoundaries = getDateFilterBoundaries(now);
 
-    return gastos.filter((gasto) => {
-      const categoryName = categoriesById[gasto.categoria_id]?.nombre || 'Sin categoría';
-      const matchesCategory = selectedCategory ? String(gasto.categoria_id) === selectedCategory : true;
-      const matchesSearch = normalizedSearch
-        ? [gasto.descripcion, categoryName, ...(gasto.etiquetas || [])]
-            .filter(Boolean)
-            .some((value) => value.toLowerCase().includes(normalizedSearch))
-        : true;
+    return gastos
+      .filter((gasto) => {
+        const categoryName = categoriesById[gasto.categoria_id]?.nombre || 'Sin categoría';
+        const gastoDate = new Date(gasto.fecha);
+        const matchesCategory = selectedCategory ? String(gasto.categoria_id) === selectedCategory : true;
+        const matchesSearch = normalizedSearch
+          ? [gasto.descripcion, categoryName, ...(gasto.etiquetas || [])]
+              .filter(Boolean)
+              .some((value) => value.toLowerCase().includes(normalizedSearch))
+          : true;
+        const hasValidDateFilter = matchesDateFilter(gastoDate, dateFilter, now, dateBoundaries);
 
-      return matchesCategory && matchesSearch;
-    });
-  }, [categoriesById, gastos, searchTerm, selectedCategory]);
+        return matchesCategory && matchesSearch && hasValidDateFilter;
+      })
+      .sort((firstGasto, secondGasto) => {
+        const firstDate = new Date(firstGasto.fecha).getTime();
+        const secondDate = new Date(secondGasto.fecha).getTime();
+
+        return secondDate - firstDate;
+      });
+  }, [categoriesById, dateFilter, gastos, searchTerm, selectedCategory]);
 
   const stats = useMemo(() => {
     const total = gastos.reduce((accumulator, gasto) => accumulator + Number(gasto.monto_ars || 0), 0);
@@ -355,7 +400,7 @@ const Gastos = () => {
         title="Listado de gastos"
         description="Listado de movimientos con búsqueda, edición y eliminación."
       >
-        <div className="mb-5 grid gap-3 lg:grid-cols-[1.2fr_0.8fr_0.6fr]">
+        <div className="mb-5 grid gap-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.6fr]">
           <label className="input-shell">
             <span className="input-icon">
               <Search />
@@ -377,9 +422,17 @@ const Gastos = () => {
             ))}
           </select>
 
+          <select className="input" value={dateFilter} onChange={(event) => setDateFilter(event.target.value)}>
+            <option value="">Todas las fechas</option>
+            <option value="day">Por día</option>
+            <option value="week">Última semana</option>
+            <option value="month">Último mes</option>
+          </select>
+
           <button className="secondary-button h-full" onClick={() => {
             setSearchTerm('');
             setSelectedCategory('');
+            setDateFilter('');
           }} type="button">
             Limpiar filtros
           </button>

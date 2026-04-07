@@ -36,9 +36,9 @@ const Login = () => {
   return (
     <AuthLayout
       title="Iniciar sesión"
-      subtitle="Entrá a tu panel financiero con una interfaz más clara y orientada a seguimiento."
+      subtitle="Ingresá con tu cuenta."
     >
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-4" onSubmit={handleSubmit} autoComplete="on">
         <div className="rounded-3xl bg-[rgba(22,58,112,0.06)] px-4 py-3 text-center text-sm text-[var(--muted)] sm:text-left">
           ¿No tenés cuenta?{' '}
           <Link to="/register" className="font-semibold text-[var(--primary)]">
@@ -67,6 +67,8 @@ const Login = () => {
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
+            autoComplete="email"
+            inputMode="email"
           />
 
           <AuthInput
@@ -78,6 +80,7 @@ const Login = () => {
             placeholder="Contraseña"
             value={formData.password}
             onChange={handleChange}
+            autoComplete="current-password"
             trailing={
               <button
                 type="button"
@@ -95,7 +98,7 @@ const Login = () => {
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
             ) : (
-              'Iniciar Sesión'
+              'Iniciar sesión'
             )}
           </button>
         </div>

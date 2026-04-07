@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, categorias, gastos, presupuestos
+from app.routers import auth, categorias, gastos, presupuestos, reportes
 
 app = FastAPI(
     title="SGP Finance API",
@@ -22,6 +22,7 @@ app.include_router(auth.router)
 app.include_router(categorias.router)
 app.include_router(gastos.router)
 app.include_router(presupuestos.router)
+app.include_router(reportes.router)
 
 @app.get("/")
 async def root():
