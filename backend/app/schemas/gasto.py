@@ -5,7 +5,6 @@ from decimal import Decimal
 
 class GastoBase(BaseModel):
     monto_ars: Decimal
-    monto_usd: Optional[Decimal] = None
     descripcion: Optional[str] = None
     fecha: datetime
     categoria_id: int
@@ -23,7 +22,6 @@ class GastoResponse(GastoBase):
 
 class GastoUpdate(BaseModel):
     monto_ars: Optional[Decimal] = None
-    monto_usd: Optional[Decimal] = None
     descripcion: Optional[str] = None
     fecha: Optional[datetime] = None
     categoria_id: Optional[int] = None

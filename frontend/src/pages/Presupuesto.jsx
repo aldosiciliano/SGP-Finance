@@ -9,7 +9,7 @@ import {
   deletePresupuesto,
   getPresupuestoData,
   updatePresupuesto
-} from '../lib/presupuestos';
+} from '../services/presupuestosService';
 
 const today = new Date();
 

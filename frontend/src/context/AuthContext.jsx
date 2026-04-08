@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../lib/api';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { getCurrentUser, loginUser, logoutUser, registerUser } from '../services/authService';
 
 const AuthContext = createContext();
 
@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Verificar si el usuario está autenticado al cargar
   useEffect(() => {
     checkAuth();
   }, []);
@@ -24,10 +23,10 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/auth/me');
-      setUser(response.data);
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
       setError(null);
-    } catch (err) {
+    } catch {
       setUser(null);
       setError(null);
     } finally {
@@ -38,12 +37,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await api.post('/auth/login', { email, password });
+      const response = await loginUser({ email, password });
       
-      // Después del login exitoso, verificar usuario
       await checkAuth();
       
-      return response.data;
+      return response;
     } catch (err) {
       const errorMessage = err.response?.data?.detail || 'Error al iniciar sesión';
       setError(errorMessage);
@@ -56,22 +54,19 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, nombre) => {
     try {
       setLoading(true);
-      
-      // Validar longitud de contraseña (bcrypt limit)
       if (password.length > 72) {
         throw new Error('La contraseña no puede tener más de 72 caracteres');
       }
       
-      const response = await api.post('/auth/register', {
+      const response = await registerUser({
         email,
         password,
         nombre
       });
       
-      // Después del registro, hacer login
       await login(email, password);
       
-      return response.data;
+      return response;
     } catch (err) {
       const errorMessage = err.response?.data?.detail || err.message || 'Error al registrarse';
       setError(errorMessage);
@@ -83,7 +78,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await api.post('/auth/logout');
+      await logoutUser();
       setUser(null);
       setError(null);
     } catch (err) {
