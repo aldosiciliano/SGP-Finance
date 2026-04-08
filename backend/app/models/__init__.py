@@ -3,7 +3,6 @@ from .usuario import Usuario
 from .categoria import Categoria
 from .gasto import Gasto
 from .inversion import Inversion
-from .tipo_cambio import TipoCambio
 from .presupuesto import Presupuesto
 
 __all__ = [
@@ -11,6 +10,5 @@ __all__ = [
     "Categoria", 
     "Gasto",
     "Inversion",
-    "TipoCambio",
     "Presupuesto"
 ]

@@ -13,7 +13,7 @@ import { ArrowRightLeft, PieChart as PieChartIcon, TrendingUp } from 'lucide-rea
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
 import StatCard from '../components/ui/StatCard';
-import api from '../lib/api';
+import { getReportesData } from '../services/reportesService';
 
 const LoadingRows = ({ rows = 3 }) => (
   <div className="space-y-3">
@@ -88,23 +88,13 @@ const Reportes = () => {
         setIsLoading(true);
         setError('');
 
-        const [categoriesResponse, comparisonResponse] = await Promise.all([
-          api.get('/reportes/categorias', {
-            params: {
-              mes: selectedMonth,
-              anio: selectedYear
-            }
-          }),
-          api.get('/reportes/comparativa', {
-            params: {
-              mes: selectedMonth,
-              anio: selectedYear
-            }
-          })
-        ]);
+        const reportesData = await getReportesData({
+          mes: selectedMonth,
+          anio: selectedYear
+        });
 
-        setCategoryReport(categoriesResponse.data);
-        setComparisonReport(comparisonResponse.data);
+        setCategoryReport(reportesData.categorias);
+        setComparisonReport(reportesData.comparativa);
       } catch (requestError) {
         setError(requestError.response?.data?.detail || 'No se pudieron cargar los reportes.');
       } finally {

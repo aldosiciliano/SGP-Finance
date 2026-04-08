@@ -21,7 +21,7 @@ import {
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
 import StatCard from '../components/ui/StatCard';
-import api from '../lib/api';
+import { getDashboardData } from '../services/dashboardService';
 
 const CHART_COLORS = ['#163a70', '#1d8a67', '#4f7db8', '#7a92b2', '#c85757', '#d49b3d'];
 
@@ -78,29 +78,11 @@ const Dashboard = () => {
         setError('');
 
         const monthRange = buildMonthRange(6);
-        const currentMonth = monthRange[monthRange.length - 1];
+        const { categorias, gastos: gastosData, resumen, monthlyResumes } = await getDashboardData(monthRange);
 
-        const [categoriasResponse, gastosResponse, resumenResponse, ...monthlyResponses] = await Promise.all([
-          api.get('/categorias'),
-          api.get('/gastos', { params: { limit: 1000 } }),
-          api.get('/presupuestos/resumen', {
-            params: {
-              mes: currentMonth.month,
-              anio: currentMonth.year
-            }
-          }),
-          ...monthRange.map(({ month, year }) =>
-            api.get('/presupuestos/resumen', {
-              params: { mes: month, anio: year }
-            })
-          )
-        ]);
-
-        const gastosData = gastosResponse.data;
-
-        setCategorias(categoriasResponse.data);
+        setCategorias(categorias);
         setGastos(gastosData);
-        setResumen(resumenResponse.data);
+        setResumen(resumen);
         setMonthlyExpenseSeries(
           monthRange.map(({ label, month, year }, index) => {
             const monthTotal = gastosData
@@ -113,7 +95,7 @@ const Dashboard = () => {
             return {
               month: label,
               gastos: monthTotal,
-              presupuesto: Number(monthlyResponses[index].data.total_presupuestado || 0)
+              presupuesto: Number(monthlyResumes[index].total_presupuestado || 0)
             };
           })
         );

@@ -8,7 +8,6 @@ class Gasto(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     monto_ars = Column(Numeric(12, 2), nullable=False)
-    monto_usd = Column(Numeric(12, 2), nullable=True)
     descripcion = Column(String, nullable=True)
     fecha = Column(DateTime(timezone=True), nullable=False)
     categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)

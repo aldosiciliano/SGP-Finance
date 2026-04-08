@@ -1,7 +1,7 @@
 import React from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { AlertCircle, ShieldAlert } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { ShieldAlert } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();

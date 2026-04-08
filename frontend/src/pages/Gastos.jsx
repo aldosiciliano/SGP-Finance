@@ -3,7 +3,8 @@ import { CalendarDays, Pencil, Plus, RefreshCw, Search, Tag, Trash2, Wallet, X }
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
 import StatCard from '../components/ui/StatCard';
-import api from '../lib/api';
+import { createCategoria, getCategorias } from '../services/categoriasService';
+import { createGasto, deleteGasto, getGastos, updateGasto } from '../services/gastosService';
 
 const formatDateInput = (value) => new Date(value).toISOString().slice(0, 10);
 
@@ -146,13 +147,7 @@ const Gastos = () => {
       setIsLoading(true);
       setError('');
 
-      const [categoriasResponse, gastosResponse] = await Promise.all([
-        api.get('/categorias'),
-        api.get('/gastos')
-      ]);
-
-      const categoriasData = categoriasResponse.data;
-      const gastosData = gastosResponse.data;
+      const [categoriasData, gastosData] = await Promise.all([getCategorias(), getGastos()]);
 
       setCategorias(categoriasData);
       setGastos(gastosData);
@@ -242,13 +237,11 @@ const Gastos = () => {
       setIsCreatingCategory(true);
       setCategoryError('');
 
-      const response = await api.post('/categorias/', {
+      const newCategory = await createCategoria({
         nombre: categoryForm.nombre.trim(),
         icono: categoryForm.icono.trim() || null,
         color: categoryForm.color || null
       });
-
-      const newCategory = response.data;
 
       setCategorias((current) => [...current, newCategory]);
       setForm((current) => ({
@@ -292,14 +285,13 @@ const Gastos = () => {
               .split(',')
               .map((tag) => tag.trim())
               .filter(Boolean)
-          : null,
-        monto_usd: null
+          : null
       };
 
       if (editingGasto) {
-        await api.put(`/gastos/${editingGasto.id}`, payload);
+        await updateGasto(editingGasto.id, payload);
       } else {
-        await api.post('/gastos/', payload);
+        await createGasto(payload);
       }
 
       closeCreateForm();
@@ -328,7 +320,7 @@ const Gastos = () => {
     try {
       setIsDeletingId(gasto.id);
       setError('');
-      await api.delete(`/gastos/${gasto.id}`);
+      await deleteGasto(gasto.id);
       await loadData();
     } catch (requestError) {
       const detail = requestError.response?.data?.detail;
