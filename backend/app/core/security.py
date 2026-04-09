@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
+import secrets
 from jose import JWTError, jwt
 import bcrypt
 from .config import settings
@@ -39,6 +40,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encoded_jwt
+
+
+def generate_csrf_token() -> str:
+    """Generar token CSRF aleatorio para doble submit cookie."""
+    return secrets.token_urlsafe(32)
 
 def verify_token(token: str) -> Optional[str]:
     """Verificar token y retornar email del usuario"""

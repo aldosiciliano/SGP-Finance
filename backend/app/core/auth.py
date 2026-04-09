@@ -3,9 +3,20 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status, Cookie
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import verify_token
 from app.models.usuario import Usuario
+
+
+COOKIE_NAME = getattr(settings, "cookie_name", "access_token")
+
+
+def _cookie_optional(default=None):
+    try:
+        return Cookie(default=default, alias=COOKIE_NAME)
+    except TypeError:
+        return Cookie(default=default)
 
 
 def _raise_unauthorized(detail: str) -> None:
@@ -17,7 +28,7 @@ def _raise_unauthorized(detail: str) -> None:
 
 
 def get_current_user(
-    access_token: Optional[str] = Cookie(default=None),
+    access_token: Optional[str] = _cookie_optional(default=None),
     db: Session = Depends(get_db)
 ) -> Usuario:
     """Obtener usuario actual desde cookie HttpOnly"""

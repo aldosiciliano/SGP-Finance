@@ -1,11 +1,13 @@
 FROM python:3.11-slim
 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
 WORKDIR /app
 
-# TODO: REvisar la estabilidad de instalar deps cad vez que se buildea el contendor
-# Instalar dependencias del sistema de forma eficiente
-RUN apt-get update && apt-get install -y \
-    gcc \
+# La capa de dependencias solo se invalida si cambia requirements.txt.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
@@ -13,8 +15,9 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código fuente
-COPY . .
+# Copiar únicamente los archivos necesarios de la app
+COPY app ./app
+COPY alembic.ini ./alembic.ini
 
 EXPOSE 8000
 

@@ -24,7 +24,6 @@ class PresupuestoUpdate(BaseModel):
 
 class PresupuestoResponse(PresupuestoBase):
     id: int
-    usuario_id: int
 
     class Config:
         from_attributes = True

@@ -15,7 +15,6 @@ class GastoCreate(GastoBase):
 
 class GastoResponse(GastoBase):
     id: int
-    usuario_id: int
     
     class Config:
         from_attributes = True
