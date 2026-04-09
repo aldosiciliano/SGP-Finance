@@ -10,7 +10,6 @@ class Inversion(Base):
     nombre = Column(String, nullable=False)
     tipo = Column(String, nullable=False)  # crypto | fondo | acciones | renta_fija
     monto_ars = Column(Numeric(12, 2), nullable=True)
-    monto_usd = Column(Numeric(12, 2), nullable=True)
     fecha_entrada = Column(DateTime(timezone=True), nullable=True)
     notas = Column(String, nullable=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)

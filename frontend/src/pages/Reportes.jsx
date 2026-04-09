@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import {
   Bar,
   BarChart,
@@ -13,7 +13,9 @@ import { ArrowRightLeft, PieChart as PieChartIcon, TrendingUp } from 'lucide-rea
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
 import StatCard from '../components/ui/StatCard';
-import api from '../lib/api';
+import { useReportes } from '../hooks/useReportes';
+import { formatCurrency } from '../utils/formatters';
+import { formatMonthYear, formatPercent } from '../utils/reportes';
 
 const LoadingRows = ({ rows = 3 }) => (
   <div className="space-y-3">
@@ -26,134 +28,25 @@ const LoadingRows = ({ rows = 3 }) => (
   </div>
 );
 
-const formatCurrency = (value) =>
-  new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    maximumFractionDigits: 0
-  }).format(Number(value || 0));
-
-const formatPercent = (value) => {
-  if (value === null || value === undefined) return 'Sin base';
-  return `${value > 0 ? '+' : ''}${Number(value).toFixed(1)}%`;
-};
-
-const formatMonthYear = (year, month) => {
-  if (!year || !month) return 'Sin base';
-
-  return new Date(year, month - 1, 1).toLocaleDateString('es-AR', {
-    month: 'long',
-    year: 'numeric'
-  });
-};
-
-const buildPeriodOptions = (count = 12) => {
-  const now = new Date();
-
-  return Array.from({ length: count }, (_, index) => {
-    const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-
-    return {
-      value: `${year}-${String(month).padStart(2, '0')}`,
-      label: formatMonthYear(year, month),
-      month,
-      year
-    };
-  });
-};
-
 const tooltipFormatter = (value) => formatCurrency(value);
 const chartMargin = { left: 4, right: 8, top: 4, bottom: 4 };
 
 const Reportes = () => {
-  const periodOptions = useMemo(() => buildPeriodOptions(), []);
-  const [selectedPeriod, setSelectedPeriod] = useState(periodOptions[0]?.value || '');
-  const [categoryReport, setCategoryReport] = useState({ categorias: [], total_gastado: 0 });
-  const [comparisonReport, setComparisonReport] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const [selectedYear, selectedMonth] = useMemo(() => {
-    const [year, month] = selectedPeriod.split('-').map(Number);
-    return [year, month];
-  }, [selectedPeriod]);
-
-  useEffect(() => {
-    if (!selectedMonth || !selectedYear) return;
-
-    const loadReportes = async () => {
-      try {
-        setIsLoading(true);
-        setError('');
-
-        const [categoriesResponse, comparisonResponse] = await Promise.all([
-          api.get('/reportes/categorias', {
-            params: {
-              mes: selectedMonth,
-              anio: selectedYear
-            }
-          }),
-          api.get('/reportes/comparativa', {
-            params: {
-              mes: selectedMonth,
-              anio: selectedYear
-            }
-          })
-        ]);
-
-        setCategoryReport(categoriesResponse.data);
-        setComparisonReport(comparisonResponse.data);
-      } catch (requestError) {
-        setError(requestError.response?.data?.detail || 'No se pudieron cargar los reportes.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadReportes();
-  }, [selectedMonth, selectedYear]);
-
-  const selectedPeriodLabel = useMemo(
-    () => periodOptions.find((option) => option.value === selectedPeriod)?.label || '',
-    [periodOptions, selectedPeriod]
-  );
-
-  const topCategory = categoryReport.categorias?.[0];
-  const comparisonDelta = Number(comparisonReport?.diferencia_gastado || 0);
-  const budgetGap = Number(comparisonReport?.actual?.total_gastado || 0) - Number(comparisonReport?.actual?.total_presupuestado || 0);
-  const budgetGapTone = budgetGap > 0 ? 'danger' : 'success';
-
-  const categoryAnalysis = useMemo(
-    () =>
-      (categoryReport.categorias || []).map((item) => {
-        const totalGastado = Number(item.total_gastado || 0);
-        const totalPresupuestado = Number(item.total_presupuestado || 0);
-        const diferencia = totalGastado - totalPresupuestado;
-
-        return {
-          ...item,
-          total_gastado: totalGastado,
-          total_presupuestado: totalPresupuestado,
-          participacion: Number(item.participacion || 0),
-          diferencia,
-          uso_presupuesto: totalPresupuestado > 0 ? (totalGastado / totalPresupuestado) * 100 : null
-        };
-      }),
-    [categoryReport.categorias]
-  );
-
-  const comparisonCategories = useMemo(
-    () =>
-      (comparisonReport?.categorias || []).map((item) => ({
-        ...item,
-        actual: Number(item.actual || 0),
-        anterior: Number(item.anterior || 0),
-        diferencia: Number(item.diferencia || 0)
-      })),
-    [comparisonReport]
-  );
+  const {
+    budgetGap,
+    budgetGapTone,
+    categoryAnalysis,
+    comparisonCategories,
+    comparisonDelta,
+    comparisonReport,
+    error,
+    isLoading,
+    periodOptions,
+    selectedPeriod,
+    selectedPeriodLabel,
+    setSelectedPeriod,
+    topCategory
+  } = useReportes();
 
   return (
     <div className="space-y-6">

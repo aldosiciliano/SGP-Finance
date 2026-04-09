@@ -11,7 +11,6 @@ class CategoriaCreate(CategoriaBase):
 
 class CategoriaResponse(CategoriaBase):
     id: int
-    usuario_id: int
     
     class Config:
         from_attributes = True
