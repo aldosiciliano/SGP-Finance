@@ -1,334 +1,48 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import { CalendarDays, Pencil, Plus, RefreshCw, Search, Tag, Trash2, Wallet, X } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
 import StatCard from '../components/ui/StatCard';
-import { createCategoria, getCategorias } from '../services/categoriasService';
-import { createGasto, deleteGasto, getGastos, updateGasto } from '../services/gastosService';
-
-const formatDateInput = (value) => new Date(value).toISOString().slice(0, 10);
-
-const INITIAL_FORM = {
-  monto_ars: '',
-  categoria_id: '',
-  fecha: formatDateInput(new Date()),
-  descripcion: '',
-  etiquetas: ''
-};
-
-const INITIAL_CATEGORY_FORM = {
-  nombre: '',
-  icono: '',
-  color: '#163a70'
-};
-
-const formatCurrency = (value) =>
-  new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    maximumFractionDigits: 0
-  }).format(Number(value) || 0);
-
-const formatDate = (value) =>
-  new Intl.DateTimeFormat('es-AR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  }).format(new Date(value));
-
-const isSameDay = (firstDate, secondDate) =>
-  firstDate.getFullYear() === secondDate.getFullYear() &&
-  firstDate.getMonth() === secondDate.getMonth() &&
-  firstDate.getDate() === secondDate.getDate();
-
-const getDateFilterBoundaries = (referenceDate) => {
-  const weekStart = new Date(referenceDate);
-  weekStart.setDate(referenceDate.getDate() - 6);
-  weekStart.setHours(0, 0, 0, 0);
-
-  const monthStart = new Date(referenceDate);
-  monthStart.setMonth(referenceDate.getMonth() - 1);
-  monthStart.setHours(0, 0, 0, 0);
-
-  return { weekStart, monthStart };
-};
-
-const matchesDateFilter = (gastoDate, dateFilter, referenceDate, boundaries) => {
-  if (dateFilter === 'day') {
-    return isSameDay(gastoDate, referenceDate);
-  }
-
-  if (dateFilter === 'week') {
-    return gastoDate >= boundaries.weekStart;
-  }
-
-  if (dateFilter === 'month') {
-    return gastoDate >= boundaries.monthStart;
-  }
-
-  return true;
-};
+import { useGastos } from '../hooks/useGastos';
+import { formatCurrency, formatDate } from '../utils/formatters';
 
 const Gastos = () => {
-  const [gastos, setGastos] = useState([]);
-  const [categorias, setCategorias] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeletingId, setIsDeletingId] = useState(null);
-  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
-  const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
-  const [editingGasto, setEditingGasto] = useState(null);
-  const [error, setError] = useState('');
-  const [formError, setFormError] = useState('');
-  const [categoryError, setCategoryError] = useState('');
-  const [form, setForm] = useState(INITIAL_FORM);
-  const [categoryForm, setCategoryForm] = useState(INITIAL_CATEGORY_FORM);
-
-  const categoriesById = useMemo(
-    () =>
-      categorias.reduce((accumulator, categoria) => {
-        accumulator[categoria.id] = categoria;
-        return accumulator;
-      }, {}),
-    [categorias]
-  );
-
-  const filteredGastos = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-    const now = new Date();
-    const dateBoundaries = getDateFilterBoundaries(now);
-
-    return gastos
-      .filter((gasto) => {
-        const categoryName = categoriesById[gasto.categoria_id]?.nombre || 'Sin categoría';
-        const gastoDate = new Date(gasto.fecha);
-        const matchesCategory = selectedCategory ? String(gasto.categoria_id) === selectedCategory : true;
-        const matchesSearch = normalizedSearch
-          ? [gasto.descripcion, categoryName, ...(gasto.etiquetas || [])]
-              .filter(Boolean)
-              .some((value) => value.toLowerCase().includes(normalizedSearch))
-          : true;
-        const hasValidDateFilter = matchesDateFilter(gastoDate, dateFilter, now, dateBoundaries);
-
-        return matchesCategory && matchesSearch && hasValidDateFilter;
-      })
-      .sort((firstGasto, secondGasto) => {
-        const firstDate = new Date(firstGasto.fecha).getTime();
-        const secondDate = new Date(secondGasto.fecha).getTime();
-
-        return secondDate - firstDate;
-      });
-  }, [categoriesById, dateFilter, gastos, searchTerm, selectedCategory]);
-
-  const stats = useMemo(() => {
-    const total = gastos.reduce((accumulator, gasto) => accumulator + Number(gasto.monto_ars || 0), 0);
-    const average = gastos.length ? total / gastos.length : 0;
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    const thisMonth = gastos.filter((gasto) => {
-      const date = new Date(gasto.fecha);
-      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-    });
-
-    return {
-      total,
-      average,
-      count: gastos.length,
-      monthCount: thisMonth.length
-    };
-  }, [gastos]);
-
-  const loadData = async () => {
-    try {
-      setIsLoading(true);
-      setError('');
-
-      const [categoriasData, gastosData] = await Promise.all([getCategorias(), getGastos()]);
-
-      setCategorias(categoriasData);
-      setGastos(gastosData);
-      setForm((current) => ({
-        ...current,
-        categoria_id: current.categoria_id || String(categoriasData[0]?.id || '')
-      }));
-    } catch (requestError) {
-      setError(requestError.response?.data?.detail || 'No se pudieron cargar los gastos.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const openCreateForm = () => {
-    setFormError('');
-    setCategoryError('');
-    setEditingGasto(null);
-    setIsCategoryFormOpen(!categorias.length);
-
-    setForm((current) => ({
-      ...INITIAL_FORM,
-      categoria_id: String(categorias[0]?.id || current.categoria_id || '')
-    }));
-    setIsCreateOpen(true);
-  };
-
-  const closeCreateForm = () => {
-    setIsCreateOpen(false);
-    setFormError('');
-    setCategoryError('');
-    setIsCategoryFormOpen(false);
-    setEditingGasto(null);
-  };
-
-  const openEditForm = (gasto) => {
-    setFormError('');
-    setCategoryError('');
-    setEditingGasto(gasto);
-    setIsCategoryFormOpen(false);
-    setForm({
-      monto_ars: String(gasto.monto_ars || ''),
-      categoria_id: String(gasto.categoria_id || ''),
-      fecha: formatDateInput(gasto.fecha),
-      descripcion: gasto.descripcion || '',
-      etiquetas: gasto.etiquetas?.join(', ') || ''
-    });
-    setIsCreateOpen(true);
-  };
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setForm((current) => ({
-      ...current,
-      [name]: value
-    }));
-  };
-
-  const handleCategoryFormChange = (event) => {
-    const { name, value } = event.target;
-    setCategoryForm((current) => ({
-      ...current,
-      [name]: value
-    }));
-  };
-
-  const toggleCategoryForm = () => {
-    setCategoryError('');
-    setCategoryForm(INITIAL_CATEGORY_FORM);
-    setIsCategoryFormOpen((current) => !current);
-  };
-
-  const handleCategorySubmit = async (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (!categoryForm.nombre.trim()) {
-      setCategoryError('Ingresá un nombre para la categoría.');
-      return;
-    }
-
-    try {
-      setIsCreatingCategory(true);
-      setCategoryError('');
-
-      const newCategory = await createCategoria({
-        nombre: categoryForm.nombre.trim(),
-        icono: categoryForm.icono.trim() || null,
-        color: categoryForm.color || null
-      });
-
-      setCategorias((current) => [...current, newCategory]);
-      setForm((current) => ({
-        ...current,
-        categoria_id: String(newCategory.id)
-      }));
-      setCategoryForm(INITIAL_CATEGORY_FORM);
-      setIsCategoryFormOpen(false);
-    } catch (requestError) {
-      const detail = requestError.response?.data?.detail;
-      setCategoryError(typeof detail === 'string' ? detail : 'No se pudo crear la categoría.');
-    } finally {
-      setIsCreatingCategory(false);
-    }
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!form.monto_ars || !form.categoria_id || !form.fecha) {
-      setFormError('Completá monto, categoría y fecha.');
-      return;
-    }
-
-    if (Number(form.monto_ars) <= 0) {
-      setFormError('El monto debe ser mayor a cero.');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setFormError('');
-
-      const payload = {
-        monto_ars: Number(form.monto_ars),
-        fecha: new Date(`${form.fecha}T12:00:00`).toISOString(),
-        categoria_id: Number(form.categoria_id),
-        descripcion: form.descripcion || null,
-        etiquetas: form.etiquetas
-          ? form.etiquetas
-              .split(',')
-              .map((tag) => tag.trim())
-              .filter(Boolean)
-          : null
-      };
-
-      if (editingGasto) {
-        await updateGasto(editingGasto.id, payload);
-      } else {
-        await createGasto(payload);
-      }
-
-      closeCreateForm();
-      await loadData();
-    } catch (requestError) {
-      const detail = requestError.response?.data?.detail;
-      setFormError(
-        typeof detail === 'string'
-          ? detail
-          : 'No se pudo guardar el gasto. Revisá que existan categorías y que el backend tenga sus tablas creadas.'
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (gasto) => {
-    const confirmed = window.confirm(
-      `Vas a eliminar el gasto "${gasto.descripcion || 'Sin descripción'}". Esta acción no se puede deshacer.`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    try {
-      setIsDeletingId(gasto.id);
-      setError('');
-      await deleteGasto(gasto.id);
-      await loadData();
-    } catch (requestError) {
-      const detail = requestError.response?.data?.detail;
-      setError(typeof detail === 'string' ? detail : 'No se pudo eliminar el gasto.');
-    } finally {
-      setIsDeletingId(null);
-    }
-  };
+  const {
+    categorias,
+    categoriesById,
+    categoryError,
+    categoryForm,
+    dateFilter,
+    editingGasto,
+    error,
+    filteredGastos,
+    form,
+    formError,
+    handleCategoryFormChange,
+    handleCategorySubmit,
+    handleDelete,
+    handleFormChange,
+    handleSubmit,
+    isCategoryFormOpen,
+    isCreateOpen,
+    isCreatingCategory,
+    isDeletingId,
+    isLoading,
+    isSubmitting,
+    loadData,
+    openCreateForm,
+    openEditForm,
+    closeCreateForm,
+    resetFilters,
+    resetForm,
+    searchTerm,
+    selectedCategory,
+    setDateFilter,
+    setSearchTerm,
+    setSelectedCategory,
+    stats,
+    toggleCategoryForm
+  } = useGastos();
 
   return (
     <div className="space-y-6">
@@ -421,11 +135,7 @@ const Gastos = () => {
             <option value="month">Último mes</option>
           </select>
 
-          <button className="secondary-button h-full" onClick={() => {
-            setSearchTerm('');
-            setSelectedCategory('');
-            setDateFilter('');
-          }} type="button">
+          <button className="secondary-button h-full" onClick={resetFilters} type="button">
             Limpiar filtros
           </button>
         </div>
@@ -540,7 +250,7 @@ const Gastos = () => {
                         step="0.01"
                         placeholder="0"
                         value={form.monto_ars}
-                        onChange={handleChange}
+                        onChange={handleFormChange}
                       />
                     </div>
                   </label>
@@ -561,7 +271,7 @@ const Gastos = () => {
                         className="input input-with-icon"
                         name="categoria_id"
                         value={form.categoria_id}
-                        onChange={handleChange}
+                        onChange={handleFormChange}
                         disabled={!categorias.length}
                       >
                         <option value="">{categorias.length ? 'Seleccionar categoría' : 'Sin categorías disponibles'}</option>
@@ -647,7 +357,7 @@ const Gastos = () => {
                         name="fecha"
                         type="date"
                         value={form.fecha}
-                        onChange={handleChange}
+                        onChange={handleFormChange}
                       />
                     </div>
                   </label>
@@ -659,7 +369,7 @@ const Gastos = () => {
                       name="descripcion"
                       placeholder="Ej. Compra de supermercado"
                       value={form.descripcion}
-                      onChange={handleChange}
+                      onChange={handleFormChange}
                     />
                   </label>
 
@@ -670,7 +380,7 @@ const Gastos = () => {
                       name="etiquetas"
                       placeholder="Opcional. Separalas con coma"
                       value={form.etiquetas}
-                      onChange={handleChange}
+                      onChange={handleFormChange}
                     />
                   </label>
 
@@ -686,12 +396,7 @@ const Gastos = () => {
                     </button>
                     <button
                       className="secondary-button"
-                      onClick={() =>
-                        setForm({
-                          ...INITIAL_FORM,
-                          categoria_id: String(categorias[0]?.id || '')
-                        })
-                      }
+                      onClick={resetForm}
                       type="button"
                     >
                       Limpiar

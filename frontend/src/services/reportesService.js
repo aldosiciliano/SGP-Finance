@@ -1,18 +1,14 @@
-import api from '../lib/api';
+import { get } from './httpService';
 
-export const getCategoryReport = async ({ mes, anio }) => {
-  const response = await api.get('/reportes/categorias', {
-    params: { mes, anio }
-  });
-  return response.data;
-};
+const buildPeriodParams = ({ mes, anio }) => ({
+  params: { mes, anio }
+});
 
-export const getComparisonReport = async ({ mes, anio }) => {
-  const response = await api.get('/reportes/comparativa', {
-    params: { mes, anio }
-  });
-  return response.data;
-};
+export const getCategoryReport = ({ mes, anio }) =>
+  get('/reportes/categorias', buildPeriodParams({ mes, anio }));
+
+export const getComparisonReport = ({ mes, anio }) =>
+  get('/reportes/comparativa', buildPeriodParams({ mes, anio }));
 
 export const getReportesData = async ({ mes, anio }) => {
   const [categorias, comparativa] = await Promise.all([

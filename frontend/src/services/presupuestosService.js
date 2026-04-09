@@ -1,19 +1,15 @@
-import api from '../lib/api';
 import { getCategorias } from './categoriasService';
+import { get, post, put, remove } from './httpService';
 
-export const getPresupuestos = async ({ mes, anio }) => {
-  const response = await api.get('/presupuestos', {
-    params: { mes, anio }
-  });
-  return response.data;
-};
+const buildPeriodParams = ({ mes, anio }) => ({
+  params: { mes, anio }
+});
 
-export const getResumenPresupuesto = async ({ mes, anio }) => {
-  const response = await api.get('/presupuestos/resumen', {
-    params: { mes, anio }
-  });
-  return response.data;
-};
+export const getPresupuestos = ({ mes, anio }) =>
+  get('/presupuestos', buildPeriodParams({ mes, anio }));
+
+export const getResumenPresupuesto = ({ mes, anio }) =>
+  get('/presupuestos/resumen', buildPeriodParams({ mes, anio }));
 
 export const getPresupuestoData = async ({ mes, anio }) => {
   const [categorias, presupuestos, resumen] = await Promise.all([
@@ -29,17 +25,9 @@ export const getPresupuestoData = async ({ mes, anio }) => {
   };
 };
 
-export const createPresupuesto = async (payload) => {
-  const response = await api.post('/presupuestos/', payload);
-  return response.data;
-};
+export const createPresupuesto = (payload) => post('/presupuestos/', payload);
 
-export const updatePresupuesto = async (id, payload) => {
-  const response = await api.put(`/presupuestos/${id}`, payload);
-  return response.data;
-};
+export const updatePresupuesto = (id, payload) =>
+  put(`/presupuestos/${id}`, payload);
 
-export const deletePresupuesto = async (id) => {
-  const response = await api.delete(`/presupuestos/${id}`);
-  return response.data;
-};
+export const deletePresupuesto = (id) => remove(`/presupuestos/${id}`);

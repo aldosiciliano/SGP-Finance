@@ -1,21 +1,9 @@
-import api from '../lib/api';
+import { get, post } from './httpService';
 
-export const getCurrentUser = async () => {
-  const response = await api.get('/auth/me');
-  return response.data;
-};
+export const getCurrentUser = () => get('/auth/me');
 
-export const loginUser = async (credentials) => {
-  const response = await api.post('/auth/login', credentials);
-  return response.data;
-};
+export const loginUser = (credentials) => post('/auth/login', credentials);
 
-export const registerUser = async (payload) => {
-  const response = await api.post('/auth/register', payload);
-  return response.data;
-};
+export const registerUser = (payload) => post('/auth/register', payload);
 
-export const logoutUser = async () => {
-  const response = await api.post('/auth/logout');
-  return response.data;
-};
+export const logoutUser = () => post('/auth/logout');
