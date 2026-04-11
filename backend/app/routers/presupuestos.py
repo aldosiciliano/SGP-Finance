@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
+from app.core.helpers import get_or_404
 from app.models.categoria import Categoria
 from app.models.gasto import Gasto
 from app.models.presupuesto import Presupuesto
@@ -23,15 +24,7 @@ router = APIRouter(prefix="/presupuestos", tags=["presupuestos"])
 
 
 def _validate_categoria_for_user(db: Session, categoria_id: int, usuario_id: int) -> Categoria:
-    categoria = db.query(Categoria).filter(
-        Categoria.id == categoria_id,
-        Categoria.usuario_id == usuario_id
-    ).first()
-
-    if not categoria:
-        raise HTTPException(status_code=404, detail="Categoría no encontrada")
-
-    return categoria
+    return get_or_404(db, Categoria, categoria_id, usuario_id, "Categoría no encontrada")
 
 
 def _ensure_unique_presupuesto(
@@ -165,13 +158,7 @@ def update_presupuesto(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    presupuesto = db.query(Presupuesto).filter(
-        Presupuesto.id == presupuesto_id,
-        Presupuesto.usuario_id == current_user.id
-    ).first()
-
-    if not presupuesto:
-        raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
+    presupuesto = get_or_404(db, Presupuesto, presupuesto_id, current_user.id, "Presupuesto no encontrado")
 
     updated_categoria_id = presupuesto_update.categoria_id or presupuesto.categoria_id
     updated_mes = presupuesto_update.mes or presupuesto.mes
@@ -201,13 +188,7 @@ def delete_presupuesto(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    presupuesto = db.query(Presupuesto).filter(
-        Presupuesto.id == presupuesto_id,
-        Presupuesto.usuario_id == current_user.id
-    ).first()
-
-    if not presupuesto:
-        raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
+    presupuesto = get_or_404(db, Presupuesto, presupuesto_id, current_user.id, "Presupuesto no encontrado")
 
     db.delete(presupuesto)
     db.commit()

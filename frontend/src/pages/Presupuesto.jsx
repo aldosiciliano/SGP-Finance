@@ -2,6 +2,8 @@ import React from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
+import AlertBanner from '../components/ui/AlertBanner';
+import InfoBanner from '../components/ui/InfoBanner';
 import PresupuestoFormDrawer from '../components/presupuesto/PresupuestoFormDrawer';
 import PresupuestoTable from '../components/presupuesto/PresupuestoTable';
 import { usePresupuestos } from '../hooks/usePresupuestos';
@@ -61,9 +63,9 @@ const Presupuesto = () => {
         />
 
         {!isLoading && !categorias.length ? (
-          <div className="mt-5 rounded-3xl border border-[rgba(200,87,87,0.18)] bg-[rgba(200,87,87,0.08)] p-4 text-sm text-[var(--danger)]">
+          <AlertBanner className="mt-5">
             Primero necesitás crear al menos una categoría para poder asignarle presupuesto.
-          </div>
+          </AlertBanner>
         ) : null}
       </section>
 
@@ -132,22 +134,14 @@ const Presupuesto = () => {
           </button>
         </div>
 
-        {error ? (
-          <div className="rounded-3xl border border-[rgba(200,87,87,0.18)] bg-[rgba(200,87,87,0.08)] p-4 text-sm text-[var(--danger)]">
-            {error}
-          </div>
-        ) : null}
+        <AlertBanner>{error}</AlertBanner>
 
         {!error && isLoading ? (
-          <div className="rounded-3xl border border-[rgba(16,37,66,0.08)] bg-white/70 p-5 text-sm text-[var(--muted)]">
-            Cargando presupuestos...
-          </div>
+          <InfoBanner>Cargando presupuestos...</InfoBanner>
         ) : null}
 
         {!error && !isLoading && !presupuestos.length ? (
-          <div className="rounded-3xl border border-[rgba(16,37,66,0.08)] bg-white/70 p-5 text-sm text-[var(--muted)]">
-            No hay presupuestos cargados para {monthLabel(selectedMonth, selectedYear)}.
-          </div>
+          <InfoBanner>No hay presupuestos cargados para {monthLabel(selectedMonth, selectedYear)}.</InfoBanner>
         ) : null}
 
         {!error && !isLoading && presupuestos.length ? (

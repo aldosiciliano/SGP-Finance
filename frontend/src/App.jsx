@@ -11,15 +11,15 @@ import Reportes from './pages/Reportes';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
-function App() {
-  const withShell = (Component) => (
-    <ProtectedRoute>
-      <AppShell>
-        <Component />
-      </AppShell>
-    </ProtectedRoute>
-  );
+const withShell = (Component) => (
+  <ProtectedRoute>
+    <AppShell>
+      <Component />
+    </AppShell>
+  </ProtectedRoute>
+);
 
+function App() {
   return (
     <AuthProvider>
       <Router>

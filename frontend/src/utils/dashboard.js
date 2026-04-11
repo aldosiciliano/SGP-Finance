@@ -1,3 +1,7 @@
+import { buildCategoriesById, getServiceErrorMessage } from './common';
+
+export { buildCategoriesById, getServiceErrorMessage };
+
 export const DASHBOARD_CHART_COLORS = ['#163a70', '#1d8a67', '#4f7db8', '#7a92b2', '#c85757', '#d49b3d'];
 
 const formatMonthLabel = (year, monthIndex) => {
@@ -25,12 +29,6 @@ export const buildMonthRange = (count) => {
     };
   });
 };
-
-export const buildCategoriesById = (categorias) =>
-  categorias.reduce((accumulator, categoria) => {
-    accumulator[categoria.id] = categoria;
-    return accumulator;
-  }, {});
 
 export const getCurrentMonthData = (gastos) => {
   const now = new Date();
@@ -109,13 +107,3 @@ export const getMonthlyExpenseSeries = (monthRange, gastos, monthlyResumes) =>
       presupuesto: Number(monthlyResumes[index]?.total_presupuestado || 0)
     };
   });
-
-export const getServiceErrorMessage = (error, fallbackMessage) => {
-  const detail = error?.response?.data?.detail;
-
-  if (typeof detail === 'string') {
-    return detail;
-  }
-
-  return error?.message || fallbackMessage;
-};

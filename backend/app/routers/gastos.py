@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
 from app.core.database import get_db
 from app.core.auth import get_current_user
+from app.core.helpers import get_or_404
 from app.models.usuario import Usuario
 from app.models.gasto import Gasto
 from app.schemas.gasto import GastoCreate, GastoResponse, GastoUpdate
@@ -55,14 +56,7 @@ def get_gasto(
     current_user: Usuario = Depends(get_current_user)
 ):
     """Obtener gasto específico del usuario"""
-    gasto = db.query(Gasto).filter(
-        Gasto.id == gasto_id,
-        Gasto.usuario_id == current_user.id
-    ).first()
-    
-    if not gasto:
-        raise HTTPException(status_code=404, detail="Gasto no encontrado")
-    return gasto
+    return get_or_404(db, Gasto, gasto_id, current_user.id, "Gasto no encontrado")
 
 @router.put("/{gasto_id}", response_model=GastoResponse)
 def update_gasto(
@@ -72,13 +66,7 @@ def update_gasto(
     current_user: Usuario = Depends(get_current_user)
 ):
     """Actualizar gasto del usuario"""
-    gasto = db.query(Gasto).filter(
-        Gasto.id == gasto_id,
-        Gasto.usuario_id == current_user.id
-    ).first()
-    
-    if not gasto:
-        raise HTTPException(status_code=404, detail="Gasto no encontrado")
+    gasto = get_or_404(db, Gasto, gasto_id, current_user.id, "Gasto no encontrado")
     
     for field, value in gasto_update.dict(exclude_unset=True).items():
         setattr(gasto, field, value)
@@ -94,13 +82,7 @@ def delete_gasto(
     current_user: Usuario = Depends(get_current_user)
 ):
     """Eliminar gasto del usuario"""
-    gasto = db.query(Gasto).filter(
-        Gasto.id == gasto_id,
-        Gasto.usuario_id == current_user.id
-    ).first()
-    
-    if not gasto:
-        raise HTTPException(status_code=404, detail="Gasto no encontrado")
+    gasto = get_or_404(db, Gasto, gasto_id, current_user.id, "Gasto no encontrado")
     
     db.delete(gasto)
     db.commit()

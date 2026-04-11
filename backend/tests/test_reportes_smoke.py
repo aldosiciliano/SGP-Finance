@@ -101,6 +101,28 @@ def _load_reportes_module():
     schemas_module.ReporteComparativaPeriodo = ReporteComparativaPeriodo
     schemas_module.ReporteComparativaResponse = ReporteComparativaResponse
 
+    # Stub app.services.reportes_service
+    app_pkg = types.ModuleType("app")
+    app_pkg.__path__ = []
+    sys.modules["app"] = app_pkg
+
+    svc_pkg = types.ModuleType("app.services")
+    svc_pkg.__path__ = []
+    sys.modules["app.services"] = svc_pkg
+
+    # Pre-register app.schemas.reportes for the service module
+    schemas_pkg = types.ModuleType("app.schemas")
+    schemas_pkg.__path__ = []
+    sys.modules["app.schemas"] = schemas_pkg
+    sys.modules["app.schemas.reportes"] = schemas_module
+
+    import importlib.util as _ilu
+    _svc_path = Path(__file__).resolve().parents[1] / "app" / "services" / "reportes_service.py"
+    _svc_spec = _ilu.spec_from_file_location("app.services.reportes_service", _svc_path)
+    _svc_mod = _ilu.module_from_spec(_svc_spec)
+    _svc_spec.loader.exec_module(_svc_mod)
+    sys.modules["app.services.reportes_service"] = _svc_mod
+
     sys.modules["fastapi"] = fastapi
     sys.modules["sqlalchemy"] = sqlalchemy
     sys.modules["sqlalchemy.orm"] = sqlalchemy_orm
@@ -120,9 +142,9 @@ reportes = _load_reportes_module()
 
 
 class ReportesSmokeTest(unittest.TestCase):
-    @patch.object(reportes, "_category_expenses_for_period")
-    @patch.object(reportes, "_budget_totals_by_period")
-    @patch.object(reportes, "_expense_totals_by_period")
+    @patch.object(reportes, "category_expenses_for_period")
+    @patch.object(reportes, "budget_totals_by_period")
+    @patch.object(reportes, "expense_totals_by_period")
     def test_get_reporte_comparativa_calculates_delta_and_variation(
         self,
         mock_expense_totals,
@@ -162,8 +184,8 @@ class ReportesSmokeTest(unittest.TestCase):
         self.assertEqual(response["actual"].total_presupuestado, Decimal("12000"))
         self.assertEqual(response["categorias"][0].categoria_nombre, "Transporte")
 
-    @patch.object(reportes, "_category_budgets_for_period")
-    @patch.object(reportes, "_category_expenses_for_period")
+    @patch.object(reportes, "category_budgets_for_period")
+    @patch.object(reportes, "category_expenses_for_period")
     def test_get_reporte_categorias_handles_empty_data(
         self,
         mock_category_expenses,
@@ -186,8 +208,8 @@ class ReportesSmokeTest(unittest.TestCase):
         self.assertEqual(response["total_gastado"], Decimal("0"))
         self.assertEqual(response["categorias"], [])
 
-    @patch.object(reportes, "_category_budgets_for_period")
-    @patch.object(reportes, "_category_expenses_for_period")
+    @patch.object(reportes, "category_budgets_for_period")
+    @patch.object(reportes, "category_expenses_for_period")
     def test_get_reporte_categorias_builds_totals_and_participation(
         self,
         mock_category_expenses,

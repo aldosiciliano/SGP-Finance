@@ -1,4 +1,7 @@
 import { formatDateInput } from './formatters';
+import { buildCategoriesById, getServiceErrorMessage } from './common';
+
+export { buildCategoriesById, getServiceErrorMessage };
 
 export const INITIAL_GASTO_FORM = {
   monto_ars: '',
@@ -46,12 +49,6 @@ const matchesDateFilter = (gastoDate, dateFilter, referenceDate, boundaries) => 
 
   return true;
 };
-
-export const buildCategoriesById = (categorias) =>
-  categorias.reduce((accumulator, categoria) => {
-    accumulator[categoria.id] = categoria;
-    return accumulator;
-  }, {});
 
 export const filterGastos = ({
   gastos,
@@ -125,13 +122,3 @@ export const buildCategoriaPayload = (categoryForm) => ({
   icono: categoryForm.icono.trim() || null,
   color: categoryForm.color || null
 });
-
-export const getServiceErrorMessage = (error, fallbackMessage) => {
-  const detail = error?.response?.data?.detail;
-
-  if (typeof detail === 'string') {
-    return detail;
-  }
-
-  return error?.message || fallbackMessage;
-};
