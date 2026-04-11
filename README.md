@@ -1,124 +1,98 @@
-# 🏦 SGP Finance — Sistema de Gestión de Gastos Personales
+# 🏦 SGP Finance
 
-> **Versión:** 1.0  
-> **Stack:** React + Tailwind · FastAPI · PostgreSQL · Docker  
-> **Estado:** 🚧 En desarrollo activo
+<div align="center">
+  <img src="https://img.shields.io/badge/React-18-blue?logo=react" alt="React 18">
+  <img src="https://img.shields.io/badge/FastAPI-0.104-green?logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker" alt="Docker">
+</div>
 
-## 📋 Descripción
-
-SGP Finance es un sistema web moderno para gestionar gastos personales con soporte multi-moneda (ARS/USD), diseñado para el contexto económico argentino. Permite registrar gastos, analizar patrones de consumo y seguir un portafolio de inversiones.
-
-### ✨ Características principales
-
-- **Registro de gastos** en pesos argentinos con conversión automática a USD
-- **Categorización personalizada** con colores e íconos
-- **Seguimiento de inversiones** (cripto, fondos, renta fija)
-- **Cotización en tiempo real** del dólar (oficial/blue)
-- **Reportes y análisis** con gráficos interactivos
-- **Autenticación segura** con JWT
-
-## 🏗️ Arquitectura
-
-```
-┌─────────────────────────────────────────────────────┐
-│                    CLIENTE (Browser)                 │
-│              React 18 + Tailwind + Recharts          │
-└──────────────────────┬──────────────────────────────┘
-                       │ HTTP / JSON
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│                  FASTAPI BACKEND                     │
-│   ┌──────────┐  ┌──────────┐  ┌─────────────────┐  │
-│   │  /auth   │  │ /gastos  │  │  /inversiones   │  │
-│   └──────────┘  └──────────┘  └─────────────────┘  │
-└──────────────────────┬──────────────────────────────┘
-                       │ SQLAlchemy ORM
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│                   POSTGRESQL                         │
-│   usuarios · gastos · categorias · inversiones       │
-└─────────────────────────────────────────────────────┘
-```
-
-## 🚀 Instalación local
-
-### Prerrequisitos
-
-- Docker y Docker Compose
-- Node.js 18+ (para desarrollo frontend)
-- Python 3.11+ (para desarrollo backend)
-
-### Pasos
-
-1. **Clonar el repositorio**
-   ```bash
-   git clone https://github.com/aldosiciliano/sgp-finance.git
-   cd sgp-finance
-   ```
-
-2. **Configurar variables de entorno**
-   ```bash
-   cp .env.example .env
-   # Editar .env con tus configuraciones
-   ```
-
-3. **Levantar servicios**
-   ```bash
-   docker compose up -d
-   ```
-
-4. **Acceder a la aplicación**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:8000
-   - Documentación API: http://localhost:8000/docs
-
-## 📊 Stack tecnológico
-
-| Capa | Tecnología |
-|------|------------|
-| Frontend | React 18 + Vite + Tailwind CSS |
-| Backend | FastAPI (Python) |
-| Base de datos | PostgreSQL |
-| ORM | SQLAlchemy + Alembic |
-| Autenticación | JWT |
-| Gráficos | Recharts |
-| Containerización | Docker |
-
-## 🗂️ Estructura del proyecto
-
-```
-sgp-finance/
-├── backend/
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── core/
-│   │   ├── models/
-│   │   ├── routers/
-│   │   └── services/
-│   ├── alembic/
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   └── services/
-│   └── package.json
-├── docker-compose.yml
-└── README.md
-```
-
-## 🎯 Objetivo del proyecto
-
-Este proyecto fue creado como parte de mi portafolio para demostrar:
-
-- **Evolución tecnológica**: Migración desde VB.NET/Windows Forms a stack web moderno
-- **Dominio full stack**: React + FastAPI + PostgreSQL + Docker
-- **Contexto real**: Solución para problemas financieros argentinos (inflación, brecha cambiaria)
-- **Best practices**: Arquitectura limpia, testing, CI/CD
-
-## 📄 Licencia
-
-MIT License - ver archivo [LICENSE](LICENSE) para detalles.
+<div align="center">
+  <strong>Sistema de gestión de finanzas personales diseñado para Argentina</strong>
+</div>
 
 ---
-> 💡 **Nota**: Este proyecto está en desarrollo activo. ¡Seguime para ver el progreso!
+
+## ¿Qué es SGP Finance?
+
+Una aplicación web moderna para controlar tus gastos, presupuestos e inversiones con un enfoque en el contexto económico argentino. Ideal para quienes quieren tomar el control de sus finanzas personales con herramientas simples pero potentes.
+
+## Características destacadas
+
+### Gastos y Categorías
+- **Registro rápido** de gastos con descripción y etiquetas
+- **Categorías personalizadas** con colores e íconos
+- **Presupuestos mensuales** por categoría con alertas de uso
+- **Filtros avanzados** por fecha, categoría y búsqueda
+
+### Visualización y Reportes
+- **Dashboard interactivo** con gráficos de evolución mensual
+- **Análisis por categorías** con porcentajes y tendencias
+- **Comparativas** entre períodos para identificar patrones
+
+
+### Seguridad y Rendimiento
+- **Autenticación segura** con JWT y cookies HttpOnly
+- **Protección CSRF** y validación de datos
+- **Diseño responsive** que funciona en cualquier dispositivo
+- **Carga rápida** con optimización de assets
+
+---
+
+## Inicio rápido
+
+### Requisitos
+- Docker
+- 5 minutos de tu tiempo
+
+### Instalación
+```bash
+# 1. Clonar el proyecto
+git clone https://github.com/aldosiciliano/sgp-finance.git
+cd sgp-finance
+
+# 2. Configurar entorno
+cp .env.example .env
+# Editar .env con tus datos (opcional para demo)
+
+# 3. Iniciar todo con Docker
+docker compose up -d
+
+# 4. Listo! Accede a:
+# Frontend: http://localhost:5173
+# API: http://localhost:8000/docs
+```
+
+---
+
+## Tecnología
+
+| Frontend | Backend | Base de Datos | Infraestructura |
+|----------|---------|---------------|----------------|
+| React 18 | FastAPI | PostgreSQL | Docker |
+| Tailwind CSS | SQLAlchemy | Alembic | |
+| Recharts | JWT Auth | | |
+
+---
+
+## Para desarrolladores
+
+```bash
+# Desarrollo frontend
+cd frontend
+npm install
+npm run dev
+
+# Desarrollo backend
+cd backend
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+---
+
+<div align="center">
+  <p>Hecho con <span style="color: #e74c3c;">&#10084;</span> en Argentina</p>
+</div>
