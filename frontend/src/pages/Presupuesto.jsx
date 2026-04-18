@@ -42,7 +42,7 @@ const Presupuesto = () => {
   const totalCategorias = resumen.categorias?.length || 0;
 
   return (
-    <div className="space-y-6">
+    <div className="panel-page">
       <section className="glass-panel px-5 py-6 sm:px-8">
         <PageHeader
           eyebrow="Presupuesto"

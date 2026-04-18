@@ -29,13 +29,13 @@ const Dashboard = () => {
     useDashboardData();
 
   return (
-    <div className="space-y-6">
+    <div className="panel-page">
       <PageHeader
         eyebrow="Panel"
         title="Resumen financiero"
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-2 grid-cols-2">
         <StatCard
           title="Gasto del mes"
           value={isLoading ? '...' : formatCurrency(stats.totalGastado)}
@@ -93,24 +93,22 @@ const Dashboard = () => {
           {error ? (
             <p className="text-sm text-[var(--danger)]">{error}</p>
           ) : (
-            <div className="h-[260px] sm:h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={monthlyExpenseSeries}>
-                  <defs>
-                    <linearGradient id="gastosFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#163a70" stopOpacity={0.32} />
-                      <stop offset="95%" stopColor="#163a70" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid vertical={false} stroke="#dbe6f2" />
-                  <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: '#5e7490', fontSize: 12 }} />
-                  <YAxis tickLine={false} axisLine={false} tick={{ fill: '#5e7490', fontSize: 12 }} />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Area type="monotone" dataKey="presupuesto" stroke="#7a92b2" strokeWidth={2} fill="transparent" />
-                  <Area type="monotone" dataKey="gastos" stroke="#163a70" strokeWidth={3} fill="url(#gastosFill)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+            <ResponsiveContainer width="100%" aspect={1.6} minHeight={160}>
+              <AreaChart data={monthlyExpenseSeries}>
+                <defs>
+                  <linearGradient id="gastosFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#163a70" stopOpacity={0.32} />
+                    <stop offset="95%" stopColor="#163a70" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} stroke="#dbe6f2" />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: '#5e7490', fontSize: 12 }} />
+                <YAxis tickLine={false} axisLine={false} tick={{ fill: '#5e7490', fontSize: 12 }} />
+                <Tooltip formatter={(value) => formatCurrency(value)} />
+                <Area type="monotone" dataKey="presupuesto" stroke="#7a92b2" strokeWidth={2} fill="transparent" />
+                <Area type="monotone" dataKey="gastos" stroke="#163a70" strokeWidth={3} fill="url(#gastosFill)" />
+              </AreaChart>
+            </ResponsiveContainer>
           )}
         </SectionPanel>
 
