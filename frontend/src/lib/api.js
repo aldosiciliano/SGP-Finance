@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { storageGet, storageRemove } from './chromeStorage';
 
 const readCookie = (name) => {
   if (typeof document === 'undefined') {
@@ -26,7 +27,12 @@ const api = axios.create({
   }
 });
 
-api.interceptors.request.use((config) => {
+api.interceptors.request.use(async (config) => {
+  const token = await storageGet('jwt_token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const method = config.method?.toLowerCase();
   const csrfProtectedMethods = new Set(['post', 'put', 'patch', 'delete']);
 
@@ -46,5 +52,21 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      await storageRemove('jwt_token');
+      await storageRemove('user_data');
+      delete api.defaults.headers.common['Authorization'];
+      
+      if (window.location.hash !== '#/login' && window.location.pathname !== '/login') {
+        window.location.hash = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

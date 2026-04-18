@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getCurrentUser, loginUser, logoutUser, registerUser } from '../services/authService';
 import { getAuthErrorMessage, validateRegistrationPassword } from '../utils/auth';
+import { storageGet } from '../lib/chromeStorage';
 
 export const useAuthSession = () => {
   const [user, setUser] = useState(null);
@@ -14,6 +15,14 @@ export const useAuthSession = () => {
   const checkAuth = async () => {
     try {
       setLoading(true);
+      
+      const token = await storageGet('jwt_token');
+      if (!token) {
+        setUser(null);
+        setError(null);
+        return null;
+      }
+      
       const currentUser = await getCurrentUser();
       setUser(currentUser);
       setError(null);
