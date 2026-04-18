@@ -22,11 +22,19 @@ import PageHeader from '../components/ui/PageHeader';
 import SectionPanel from '../components/ui/SectionPanel';
 import StatCard from '../components/ui/StatCard';
 import { useDashboardData } from '../hooks/useDashboardData';
+import { useChromeMessages } from '../hooks/useChromeMessages';
 import { formatCurrency } from '../utils/formatters';
 
 const Dashboard = () => {
-  const { error, expenseCategories, isLoading, monthlyExpenseSeries, recentExpenses, stats, summaryItems } =
+  const { error, expenseCategories, isLoading, monthlyExpenseSeries, recentExpenses, stats, summaryItems, reload } =
     useDashboardData();
+
+  // Escuchar mensajes de Chrome para recargar cuando se crea un gasto
+  useChromeMessages((message) => {
+    if (message.type === 'GASTO_CREATED') {
+      reload();
+    }
+  });
 
   return (
     <div className="panel-page">

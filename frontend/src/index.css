@@ -244,3 +244,254 @@
     }
   }
 }
+
+/* Popup de Gasto Rápido */
+.popup-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: #1e293b;
+  background: #f8fafc;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: white;
+}
+
+.header-left {
+  width: 24px;
+}
+
+.back-button,
+.close-button {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.back-button:hover,
+.close-button:hover {
+  background: #f1f5f9;
+  color: #163a70;
+}
+
+.step-indicator {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.popup-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 20px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.popup-body.success {
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.step-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.step-input {
+  width: 100%;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 12px 12px 32px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.step-input::placeholder {
+  color: #cbd5e1;
+}
+
+.step-input:focus {
+  border-color: #163a70;
+  box-shadow: 0 0 0 3px rgba(22, 58, 112, 0.1);
+}
+
+.step-select {
+  width: 100%;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.step-select:focus {
+  border-color: #163a70;
+  box-shadow: 0 0 0 3px rgba(22, 58, 112, 0.1);
+}
+
+.step-select option {
+  background: white;
+  color: #1e293b;
+}
+
+.success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: successPop 0.5s ease-out;
+}
+
+@keyframes successPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.success-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(34, 197, 94, 0.2);
+  border: 3px solid #22c55e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #22c55e;
+}
+
+.success-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.error-message {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #fca5a5;
+  text-align: center;
+  animation: shake 0.3s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.popup-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: white;
+}
+
+.next-button {
+  width: 100%;
+  background: #163a70;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.next-button:hover:not(:disabled) {
+  background: #0d2950;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 58, 112, 0.2);
+}
+
+.next-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.next-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hint-text {
+  font-size: 10px;
+  color: #94a3b8;
+  text-align: center;
+  font-weight: 500;
+}
+

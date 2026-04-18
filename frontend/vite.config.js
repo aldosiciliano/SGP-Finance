@@ -14,6 +14,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        popup: resolve(__dirname, 'src/popup.html'),
       },
       output: {
         manualChunks: undefined,
