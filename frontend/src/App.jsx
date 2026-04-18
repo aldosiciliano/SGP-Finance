@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppShell from './components/layout/AppShell';
+import ExtensionShell from './components/layout/ExtensionShell';
 import Dashboard from './pages/Dashboard';
 import Gastos from './pages/Gastos';
 import Presupuesto from './pages/Presupuesto';
@@ -11,11 +12,15 @@ import Reportes from './pages/Reportes';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
+const isExtension = typeof chrome !== 'undefined' && chrome.storage;
+
+const Shell = isExtension ? ExtensionShell : AppShell;
+
 const withShell = (Component) => (
   <ProtectedRoute>
-    <AppShell>
+    <Shell>
       <Component />
-    </AppShell>
+    </Shell>
   </ProtectedRoute>
 );
 

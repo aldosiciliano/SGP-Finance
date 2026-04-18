@@ -228,4 +228,10 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  @media (max-width: 480px) {
+    .hide-in-panel {
+      display: none;
+    }
+  }
 }
