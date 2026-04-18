@@ -14,10 +14,11 @@ app = FastAPI(
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Frontend URL
-    allow_credentials=True,  # Importante para cookies
+    allow_origins=settings.cors_origins_list,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-CSRF-Token"],
 )
 
 
@@ -27,6 +28,10 @@ async def csrf_protection(request: Request, call_next):
     exempt_paths = {"/auth/login", "/auth/register"}
 
     if request.method not in protected_methods or request.url.path in exempt_paths:
+        return await call_next(request)
+
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
         return await call_next(request)
 
     access_cookie = request.cookies.get(settings.cookie_name)
