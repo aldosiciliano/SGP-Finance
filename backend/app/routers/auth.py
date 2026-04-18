@@ -123,7 +123,17 @@ def login(usuario: UsuarioLogin, response: Response, db: Session = Depends(get_d
     )
     _set_csrf_cookie(response)
     
-    return {"message": "Login exitoso"}
+    # Devolver token en JSON para extensión Chrome + datos de usuario
+    return {
+        "message": "Login exitoso",
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": db_user.id,
+            "email": db_user.email,
+            "nombre": db_user.nombre
+        }
+    }
 
 @router.post("/logout")
 def logout(response: Response):

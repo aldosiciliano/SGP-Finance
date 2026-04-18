@@ -228,4 +228,19 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Contenedor estándar para el Side Panel */
+  .panel-page {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;        /* gap-3 de Tailwind */
+    padding: 12px;    /* px-3 py-3 */
+    width: 100%;
+  }
+
+  @media (max-width: 480px) {
+    .hide-in-panel {
+      display: none;
+    }
+  }
 }

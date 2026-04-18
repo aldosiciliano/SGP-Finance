@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import Literal, Optional
+from typing import Literal, Optional, List
 
 class Settings(BaseSettings):
     database_url: str
@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     cookie_name: str = "access_token"
     csrf_cookie_name: str = "csrf_token"
     csrf_header_name: str = "X-CSRF-Token"
+    
+    cors_origins: str = "http://localhost:5173,http://localhost:4173"
+    
+    @property
+    def cors_origins_list(self) -> List[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",")]
     
     class Config:
         env_file = ".env"

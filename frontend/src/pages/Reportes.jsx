@@ -49,7 +49,7 @@ const Reportes = () => {
   } = useReportes();
 
   return (
-    <div className="space-y-6">
+    <div className="panel-page">
       <PageHeader
         eyebrow="Reportes"
         title="Comparativas y desvíos"
