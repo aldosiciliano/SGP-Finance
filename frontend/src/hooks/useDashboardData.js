@@ -27,26 +27,26 @@ export const useDashboardData = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const loadDashboard = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+
+      const monthRange = buildMonthRange(6);
+      const { categorias, gastos: gastosData, resumen, monthlyResumes } = await getDashboardData(monthRange);
+
+      setCategorias(categorias);
+      setGastos(gastosData);
+      setResumen(resumen);
+      setMonthlyExpenseSeries(getMonthlyExpenseSeries(monthRange, gastosData, monthlyResumes));
+    } catch (requestError) {
+      setError(getServiceErrorMessage(requestError, 'No se pudo cargar el dashboard.'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        setIsLoading(true);
-        setError('');
-
-        const monthRange = buildMonthRange(6);
-        const { categorias, gastos: gastosData, resumen, monthlyResumes } = await getDashboardData(monthRange);
-
-        setCategorias(categorias);
-        setGastos(gastosData);
-        setResumen(resumen);
-        setMonthlyExpenseSeries(getMonthlyExpenseSeries(monthRange, gastosData, monthlyResumes));
-      } catch (requestError) {
-        setError(getServiceErrorMessage(requestError, 'No se pudo cargar el dashboard.'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadDashboard();
   }, []);
 
@@ -92,6 +92,7 @@ export const useDashboardData = () => {
     monthlyExpenseSeries,
     recentExpenses,
     stats,
-    summaryItems
+    summaryItems,
+    reload: loadDashboard
   };
 };

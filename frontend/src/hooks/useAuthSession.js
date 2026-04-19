@@ -27,7 +27,7 @@ export const useAuthSession = () => {
       setUser(currentUser);
       setError(null);
       return currentUser;
-    } catch {
+    } catch (err) {
       setUser(null);
       setError(null);
       return null;

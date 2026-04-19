@@ -17,11 +17,26 @@
   },
   "action": {
     "default_title": "Abrir SGP Finance",
+    "default_popup": "src/popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
+    }
+  },
+  "commands": {
+    "quick-expense": {
+      "suggested_key": {
+        "default": "Alt+G",
+        "mac": "Alt+G"
+      },
+      "description": "Agregar gasto rápido"
+    },
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+G"
+      }
     }
   },
   "side_panel": {
